@@ -5,6 +5,6 @@ exports.connectToDb = async () => {
 		mongoose.set('strictQuery', true)
 		await mongoose.connect(process.env.DBURL)
 	} catch (error) {
-		console.log(error.message)
+		throw error
 	}
 }
