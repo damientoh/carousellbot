@@ -1,22 +1,26 @@
 const BotMessage = {
 	welcomeMessage:
-		'Welcome to CarousellScraper.com bot. Please choose an action from the keyboard!',
+		'Welcome to Carousell Bot. Please select an option from the menu.',
 	enterKeyword: 'Please enter a keyword.',
-	keywordExists: 'This keyword already exists.',
-	keywordAddedSuccessfully:
-		'Keyword added successfully! You will see new listings from now on.',
+	keywordExists(keyword) {
+		return 'The keyword ' + keyword + ' is already being tracked'
+	},
+	keywordAddedSuccessfully(keyword) {
+		return 'The keyword ' + keyword + ' has been added and will now be tracked.'
+	},
 	keyboardClosed: 'Closed successfully. Press /start to see keyboard again.',
 	noKeyword:
 		'There is no keywords registered under this chat. Please add a keyword.',
 	indexToDelete: 'Please type the keyword # to delete.',
 	invalidUrlOrImage:
-		'Invalid listing URL and image URL when sending a listing.',
-	listignError: 'Listsing error!',
-	invalidKeywordNumber: 'You entered a invalid keyword number',
+		'The listing URL and image URL are invalid. Please check and try again.',
+	listignError: 'There was an error with the listing. Please try again.',
+	invalidKeywordNumber:
+		'The keyword number you entered is invalid. Please enter a valid number.',
 	numOfKeyword(number) {
 		return 'There is a total of ' + number + ' keyword(s).'
 	},
-	unrecognisedCommand: 'Unrecognised command. Press /start to access the menu.',
+	unrecognisedCommand: 'I\'m sorry, I don\'t understand that command.',
 	keywordDeleted(keyword) {
 		return keyword + ' has been deleted successfully!'
 	},

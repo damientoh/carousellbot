@@ -139,14 +139,14 @@ class Bot {
 				if (await Notification.hasKeyword(chatId, keyword)) {
 					this.bot.sendMessage(
 						chatId,
-						this.botMessage.keywordExists,
+						this.botMessage.keywordExists(keyword),
 						this.sendOption.standard
 					)
 				} else {
 					await Notification.addKeyword(chatId, keyword)
 					this.bot.sendMessage(
 						chatId,
-						this.botMessage.keywordAddedSuccessfully,
+						this.botMessage.keywordAddedSuccessfully(keyword),
 						this.sendOption.standard
 					)
 					this.bot.sendMessage(
