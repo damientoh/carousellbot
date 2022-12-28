@@ -25,19 +25,8 @@ class Bot {
 		this.bot.onText(/\/seekeywords/, await this.doSeeAllKeywords.bind(this))
 		this.bot.onText(/\/deletekeyword/, await this.doDeleteKeywords.bind(this))
 		this.bot.onText(/\/closekeyboard/, this.doHideKeyboard.bind(this))
-		this.bot.on('callback_query', await this.doCallbackQuery.bind(this))
+		// this.bot.on('callback_query', await this.doCallbackQuery.bind(this))
 		this.startDebug()
-	}
-
-	async doCallbackQuery(callbackQuery) {
-		const { msg, data } = callbackQuery
-		console.log('hello')
-
-		switch (data) {
-			case 'addkeyword':
-				await this.doAddNewKeyword(msg)
-				break
-		}
 	}
 
 	async doMessage(msg) {
