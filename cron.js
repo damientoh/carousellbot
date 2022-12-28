@@ -6,7 +6,7 @@ const notifier = new Notifier()
 notifier
 	.initialize()
 	.then(() => {
-		cron.schedule('*/20 * * * * *', async () => {
+		cron.schedule('*/30 * * * * *', async () => {
 			await notifier.activateScrapers()
 		})
 	})
