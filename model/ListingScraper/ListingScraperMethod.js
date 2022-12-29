@@ -158,8 +158,8 @@ ListingScraperSchema.methods.deleteNotification = async function (
 		{ _id: this.id },
 		{ $pull: { notification } }
 	)
-	await this.decreaseUsageByOne()
-	await this.deleteIfNoUsage()
+	await this.decreaseUsageByOne() // minus 1 from the usage count
+	await this.deleteIfNoUsage() // delete this scraper if there's usage
 }
 
 ListingScraperSchema.methods.hasUsage = async function () {

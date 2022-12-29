@@ -55,9 +55,9 @@ class Bot {
 		}
 	}
 
-	doStart(msg) {
+	async doStart(msg) {
 		const chatId = msg.chat.id
-		this.sendMessage(
+		await this.sendMessage(
 			chatId,
 			this.botMessage.welcomeMessage,
 			this.sendOption.standard
@@ -69,7 +69,7 @@ class Bot {
 
 		const chatId = msg.chat.id
 		const formattedKeywords = await this.getFormattedKeywords(chatId)
-		this.sendMessage(chatId, formattedKeywords, this.sendOption.standard)
+		await this.sendMessage(chatId, formattedKeywords, this.sendOption.standard)
 	}
 
 	async doDeleteKeywords(msg) {
@@ -77,7 +77,7 @@ class Bot {
 
 		const chatId = msg.chat.id
 		const formattedKeywords = await this.getFormattedKeywords(chatId)
-		this.sendMessage(chatId, formattedKeywords)
+		await this.sendMessage(chatId, formattedKeywords)
 
 		const indexPrompt = await this.sendMessage(
 			chatId,
