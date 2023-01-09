@@ -52,7 +52,6 @@ ListingScraperSchema.methods.getFirstPageDataFromHtml = function (
 			})
 		}
 	})
-
 	return result
 }
 
@@ -154,10 +153,7 @@ ListingScraperSchema.methods.addNotification = async function (notification) {
 ListingScraperSchema.methods.deleteNotification = async function (
 	notification
 ) {
-	await this.constructor.findOneAndUpdate(
-		{ _id: this.id },
-		{ $pull: { notification } }
-	)
+	await this.constructor.findOneAndUpdate({ _id: this.id }, { $pull: { notification } })
 	await this.decreaseUsageByOne() // minus 1 from the usage count
 	await this.deleteIfNoUsage() // delete this scraper if there's usage
 }
