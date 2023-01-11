@@ -14,7 +14,7 @@ const BotMessage = {
 	indexToDelete: 'Please type the keyword # to delete.',
 	invalidUrlOrImage:
 		'The listing URL and image URL are invalid. Please check and try again.',
-	listignError: 'There was an error with the listing. Please try again.',
+	listingError: 'There was an error with the listing. Please try again.',
 	invalidKeywordNumber:
 		'The keyword number you entered is invalid. Please enter a valid number.',
 	numOfKeyword(number) {

@@ -29,10 +29,6 @@ class Bot {
 		this.startDebug()
 	}
 
-	async doMessage(msg) {
-		console.log(msg)
-	}
-
 	startDebug() {
 		if (this.isDebug) {
 			this.bot.on('polling_error', error => {
@@ -50,7 +46,7 @@ class Bot {
 	async valdiateChat(msg) {
 		const chatId = msg.chat.id
 		if (!(await Notification.chatExists(chatId))) {
-			const notification = new Notification({ chatId })
+			const notification = new Notification({chatId})
 			await notification.save()
 		}
 	}
@@ -101,7 +97,7 @@ class Bot {
 				}
 
 				await notification.deleteKeywordByIndex(index)
-				this.bot.sendMessage(
+				await this.bot.sendMessage(
 					chatId,
 					this.botMessage.keywordDeleted(allKeywords[index]),
 					this.sendOption.standard
@@ -126,19 +122,19 @@ class Bot {
 			(async keywordMessage => {
 				const keyword = keywordMessage.text
 				if (await Notification.hasKeyword(chatId, keyword)) {
-					this.bot.sendMessage(
+					await this.bot.sendMessage(
 						chatId,
 						this.botMessage.keywordExists(keyword),
 						this.sendOption.standard
 					)
 				} else {
 					await Notification.addKeyword(chatId, keyword)
-					this.bot.sendMessage(
+					await this.bot.sendMessage(
 						chatId,
 						this.botMessage.keywordAddedSuccessfully(keyword),
 						this.sendOption.standard
 					)
-					this.bot.sendMessage(
+					await this.bot.sendMessage(
 						chatId,
 						await this.getFormattedKeywords(chatId),
 						this.sendOption.standard
@@ -160,9 +156,7 @@ class Bot {
 	async getFormattedKeywords(chatId) {
 		const notification = await Notification.findByChatId(chatId)
 		const allKeywords = await notification.getKeywords()
-		const formattedKeywords = this.formatKeywords(allKeywords)
-
-		return formattedKeywords
+		return this.formatKeywords(allKeywords)
 	}
 
 	formatKeywords(allKeywords) {
@@ -195,7 +189,7 @@ class Bot {
 			return result
 		}
 
-		return this.botMessage.listingError
+		return BotMessage.listingError
 	}
 
 	async sendSingleListing(chatId, listing, keyword) {
