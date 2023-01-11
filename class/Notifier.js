@@ -4,6 +4,8 @@ const Bot = require('./Bot/Bot')
 
 class Notifier {
 	bot
+	messageQueue
+	scrapingQueue
 
 	constructor() {
 		this.bot = new Bot()
