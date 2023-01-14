@@ -8,6 +8,7 @@ class Bot {
 	bot
 	botMessage
 	sendOption
+	isDebug
 
 	constructor() {
 		this.bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
@@ -43,7 +44,7 @@ class Bot {
 		})
 	}
 
-	async valdiateChat(msg) {
+	async validateChat(msg) {
 		const chatId = msg.chat.id
 		if (!(await Notification.chatExists(chatId))) {
 			const notification = new Notification({chatId})
@@ -55,13 +56,13 @@ class Bot {
 		const chatId = msg.chat.id
 		await this.sendMessage(
 			chatId,
-			this.botMessage.welcomeMessage,
+			BotMessage.welcomeMessage,
 			this.sendOption.standard
 		)
 	}
 
 	async doSeeAllKeywords(msg) {
-		await this.valdiateChat(msg)
+		await this.validateChat(msg)
 
 		const chatId = msg.chat.id
 		const formattedKeywords = await this.getFormattedKeywords(chatId)
@@ -69,7 +70,7 @@ class Bot {
 	}
 
 	async doDeleteKeywords(msg) {
-		await this.valdiateChat(msg)
+		await this.validateChat(msg)
 
 		const chatId = msg.chat.id
 		const formattedKeywords = await this.getFormattedKeywords(chatId)
@@ -77,42 +78,43 @@ class Bot {
 
 		const indexPrompt = await this.sendMessage(
 			chatId,
-			this.botMessage.indexToDelete,
+			BotMessage.indexToDelete,
 			this.sendOption.forceReply
 		)
 
 		this.bot.onReplyToMessage(
 			chatId,
 			indexPrompt.message_id,
-			(async indexMessage => {
+			async function (indexMessage) {
 				const index = -1 + parseInt(indexMessage.text)
 				const notification = await Notification.findByChatId(chatId)
 				const allKeywords = await notification.getKeywords()
 
 				if (Number.isNaN(index) || !(index < allKeywords.length) || index < 0) {
-					return this.bot.sendMessage(
+					return await this.sendMessage(
 						chatId,
-						this.botMessage.invalidKeywordNumber
+						BotMessage.invalidKeywordNumber
 					)
 				}
 
 				await notification.deleteKeywordByIndex(index)
-				await this.bot.sendMessage(
+				
+				await this.sendMessage(
 					chatId,
-					this.botMessage.keywordDeleted(allKeywords[index]),
+					BotMessage.keywordDeleted(allKeywords[index]),
 					this.sendOption.standard
 				)
-			}).bind(this)
+			}.bind(this)
 		)
 	}
 
 	async doAddNewKeyword(msg) {
-		await this.valdiateChat(msg)
+		await this.validateChat(msg)
 
 		const chatId = msg.chat.id
 		const keywordPrompt = await this.sendMessage(
 			chatId,
-			this.botMessage.enterKeyword,
+			BotMessage.enterKeyword,
 			this.sendOption.forceReply
 		)
 
@@ -122,19 +124,19 @@ class Bot {
 			(async keywordMessage => {
 				const keyword = keywordMessage.text
 				if (await Notification.hasKeyword(chatId, keyword)) {
-					await this.bot.sendMessage(
+					await this.sendMessage(
 						chatId,
 						this.botMessage.keywordExists(keyword),
 						this.sendOption.standard
 					)
 				} else {
 					await Notification.addKeyword(chatId, keyword)
-					await this.bot.sendMessage(
+					await this.sendMessage(
 						chatId,
 						this.botMessage.keywordAddedSuccessfully(keyword),
 						this.sendOption.standard
 					)
-					await this.bot.sendMessage(
+					await this.sendMessage(
 						chatId,
 						await this.getFormattedKeywords(chatId),
 						this.sendOption.standard
@@ -146,7 +148,7 @@ class Bot {
 
 	doHideKeyboard(msg) {
 		const chatId = msg.chat.id
-		return this.bot.sendMessage(
+		return this.sendMessage(
 			chatId,
 			this.botMessage.keyboardClosed,
 			this.sendOption.hideKeyboard

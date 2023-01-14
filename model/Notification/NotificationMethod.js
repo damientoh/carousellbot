@@ -105,7 +105,6 @@ NotificationSchema.methods.addKeyword = async function (keyword) {
 			this.addScraperId(scraper.id),
 			scraper.addNotification(notification.id),
 		])
-		return
 	} catch (error) {
 		throw new Error(error.message)
 	}

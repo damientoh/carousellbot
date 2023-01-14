@@ -32,7 +32,7 @@ ListingScraperSchema.methods.getFirstPageDataFromHtml = function (
 
 		const carousellBaseUrl = 'https://carousell.sg'
 
-		const username = $(this).find('[data-testid=\'listing-card-text-seller-name\']').text()
+		// const username = $(this).find('[data-testid=\'listing-card-text-seller-name\']').text()
 		const content = $(this).children().first()
 		const header = $(content).children('a').first()
 		const ownerProfileUrl = carousellBaseUrl + $(header).attr('href').split('?')[0]
@@ -105,7 +105,7 @@ ListingScraperSchema.methods.updateScrapedBeforeListings = async function (
 
 		if (scraper.lastFetchIds.length > 200) {
 			await this.constructor.updateOne(
-				{_id: this.id},
+				{ _id: this.id },
 				{
 					$set: {
 						lastFetchIds: lastFetchIds.slice(scraper.lastFetchIds.length - 100),
@@ -115,15 +115,15 @@ ListingScraperSchema.methods.updateScrapedBeforeListings = async function (
 		}
 
 		await this.constructor.findOneAndUpdate(
-			{_id: this.id},
-			{$push: {lastFetchIds}}
+			{ _id: this.id },
+			{ $push: { lastFetchIds } }
 		)
 	}
 }
 
 ListingScraperSchema.statics.findScraperWithKeyword = async function (keyword) {
 	keyword = keyword.toLowerCase()
-	const scraper = await this.findOne({keyword})
+	const scraper = await this.findOne({ keyword })
 	if (scraper) {
 		return scraper
 	}
@@ -137,22 +137,22 @@ ListingScraperSchema.methods.getUsage = async function () {
 
 ListingScraperSchema.methods.increaseUsageByOne = async function () {
 	await this.constructor.findOneAndUpdate(
-		{_id: this.id},
-		{usage: (await this.getUsage()) + 1}
+		{ _id: this.id },
+		{ usage: (await this.getUsage()) + 1 }
 	)
 }
 
 ListingScraperSchema.methods.decreaseUsageByOne = async function () {
 	await this.constructor.findOneAndUpdate(
-		{_id: this.id},
-		{usage: (await this.getUsage()) - 1}
+		{ _id: this.id },
+		{ usage: (await this.getUsage()) - 1 }
 	)
 }
 
 ListingScraperSchema.methods.addNotification = async function (notification) {
 	await this.constructor.findOneAndUpdate(
-		{_id: this.id},
-		{$push: {notification}}
+		{ _id: this.id },
+		{ $push: { notification } }
 	)
 	await this.increaseUsageByOne()
 }
@@ -160,7 +160,7 @@ ListingScraperSchema.methods.addNotification = async function (notification) {
 ListingScraperSchema.methods.deleteNotification = async function (
 	notification
 ) {
-	await this.constructor.findOneAndUpdate({_id: this.id}, {$pull: {notification}})
+	await this.constructor.findOneAndUpdate({ _id: this.id }, { $pull: { notification } })
 	await this.decreaseUsageByOne() // minus 1 from the usage count
 	await this.deleteIfNoUsage() // delete this scraper if there's usage
 }
@@ -173,7 +173,7 @@ ListingScraperSchema.methods.deleteIfNoUsage = async function () {
 	const scraper = await this.constructor.findById(this.id)
 
 	if (!(await scraper.hasUsage())) {
-		await this.constructor.deleteOne({id: this.id})
+		await this.constructor.deleteOne({ _id: this.id })
 	}
 }
 
@@ -181,7 +181,7 @@ ListingScraperSchema.methods.getFirstPageNewListings = async function () {
 	try {
 		let firstScrape = false
 
-		if ((await this.getLastFetchedIds()).length == 0) {
+		if ((await this.getLastFetchedIds()).length === 0) {
 			firstScrape = true
 		}
 
