@@ -10,11 +10,13 @@ NotificationSchema.statics.findByChatId = async function (chatId) {
 	return await this.findOne({ chatId })
 }
 
-NotificationSchema.methods.HasScraper = async function (listingScraperId) {
+// TODO: check if the categoryUrl is the same
+NotificationSchema.methods.HasScraper = async function (listingScraperId, categoryUrl) {
 	const notification = await this.constructor.findById(this.id)
+	await notification.populate('listingScraper')
 	return notification.listingScraper
-		.map(objectId => objectId.toString())
-		.includes(listingScraperId)
+		.map(scraper => scraper.id === listingScraperId && categoryUrl === scraper.categoryUrl)
+		.includes(true)
 }
 
 NotificationSchema.methods.addScraperId = async function (listingScraperId) {
@@ -26,28 +28,52 @@ NotificationSchema.methods.addScraperId = async function (listingScraperId) {
 	}
 }
 
-NotificationSchema.statics.hasKeyword = async function (chatId, keyword) {
+NotificationSchema.statics.hasKeyword = async function (chatId, keyword, categoryUrl) {
 	const notification = await this.findByChatId(chatId)
 	await notification.populate('listingScraper')
 	const scrapers = notification.listingScraper
-	const allKeywords = scrapers.map(scraper => scraper.keyword.toLowerCase())
-	return allKeywords.includes(keyword.toLowerCase())
+	const allKeywords = scrapers.map(scraper => scraper.is(keyword, categoryUrl))
+	console.log(allKeywords)
+	return allKeywords.includes(true)
 }
 
-NotificationSchema.methods.hasKeyword = async function (keyword) {
+NotificationSchema.methods.hasKeyword = async function (keyword, categoryUrl) {
 	const notification = await this.constructor.findById(this.id)
 	await notification.populate('listingScraper')
 	const scrapers = notification.listingScraper
-	const allKeywords = scrapers.map(scraper => scraper.keyword)
-	return allKeywords.includes(keyword)
+	const allKeywords = scrapers.map(scraper => scraper.is(keyword, categoryUrl))
+	return allKeywords.includes(true)
 }
 
 NotificationSchema.methods.getKeywords = async function () {
 	const notification = await this.constructor.findById(this.id)
 	await notification.populate('listingScraper')
 	const scrapers = notification.listingScraper
-	const allKeywords = scrapers.map(scraper => scraper.keyword)
-	return allKeywords
+	return scrapers.map(scraper => scraper.keyword)
+}
+
+NotificationSchema.methods.getKeywordsWithCategory = async function () {
+	const notification = await this.constructor.findById(this.id)
+	await notification.populate('listingScraper')
+	const scrapers = notification.listingScraper
+	return scrapers.map(scraper => {
+		return {
+			keyword: scraper.keyword,
+			category: scraper.category,
+		}
+	})
+}
+
+NotificationSchema.methods.getKeywordsWithCategory = async function () {
+	const notification = await this.constructor.findById(this.id)
+	await notification.populate('listingScraper')
+	const scrapers = notification.listingScraper
+	return scrapers.map(scraper => {
+		return {
+			keyword: scraper.keyword,
+			category: scraper.category,
+		}
+	})
 }
 
 NotificationSchema.methods.deleteKeywordByIndex = async function (index) {
@@ -63,17 +89,17 @@ NotificationSchema.methods.deleteKeywordByIndex = async function (index) {
 	await scraper.deleteNotification(notification.id)
 }
 
-NotificationSchema.statics.addKeyword = async function (chatId, keyword) {
+NotificationSchema.statics.addKeyword = async function (chatId, keyword, category, categoryUrl) {
 	const notification = await this.findByChatId(chatId)
-	if (await notification.hasKeyword(keyword)) {
+	if (await notification.hasKeyword(keyword, categoryUrl)) {
 		return
 	}
 
 	// check if a scraper for this keyword already exists
-	let scraper = await ListingScraper.findScraperWithKeyword(keyword)
+	let scraper = await ListingScraper.findScraperWithKeyword(keyword, categoryUrl)
 
 	if (!scraper) {
-		scraper = new ListingScraper({ keyword, usage: 0 })
+		scraper = new ListingScraper({ keyword, usage: 0, category, categoryUrl })
 		await scraper.save()
 	}
 
@@ -87,16 +113,16 @@ NotificationSchema.statics.addKeyword = async function (chatId, keyword) {
 	}
 }
 
-NotificationSchema.methods.addKeyword = async function (keyword) {
-	if (await this.hasKeyword(keyword)) {
+NotificationSchema.methods.addKeyword = async function (keyword, categoryUrl) {
+	if (await this.hasKeyword(keyword, categoryUrl)) {
 		return
 	}
 
 	// check if a scraper for this keyword already exists
-	let scraper = await ListingScraper.findScraperWithKeyword(keyword)
+	let scraper = await ListingScraper.findScraperWithKeyword(keyword, categoryUrl)
 
 	if (!scraper) {
-		scraper = new ListingScraper({ keyword, usage: 0 })
+		scraper = new ListingScraper({ keyword, usage: 0, categoryUrl })
 		await scraper.save()
 	}
 

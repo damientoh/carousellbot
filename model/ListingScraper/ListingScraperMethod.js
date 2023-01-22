@@ -121,9 +121,9 @@ ListingScraperSchema.methods.updateScrapedBeforeListings = async function (
 	}
 }
 
-ListingScraperSchema.statics.findScraperWithKeyword = async function (keyword) {
+ListingScraperSchema.statics.findScraperWithKeyword = async function (keyword, categoryUrl) {
 	keyword = keyword.toLowerCase()
-	const scraper = await this.findOne({ keyword })
+	const scraper = await this.findOne({ keyword, categoryUrl })
 	if (scraper) {
 		return scraper
 	}
@@ -199,6 +199,10 @@ ListingScraperSchema.methods.getFirstPageNewListings = async function () {
 	} catch (error) {
 		throw new Error(error.message)
 	}
+}
+
+ListingScraperSchema.methods.is = function (keyword, categoryUrl) {
+	return this.keyword === keyword && this.categoryUrl === categoryUrl
 }
 
 module.exports = mongoose.model('ListingScraper', ListingScraperSchema)

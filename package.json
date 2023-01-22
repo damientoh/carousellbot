@@ -4,12 +4,13 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/jest": "^29.2.5",
     "axios": "^1.2.1",
     "bull": "^4.10.2",
     "cheerio": "^1.0.0-rc.12",
@@ -20,6 +21,9 @@
     "morgan": "^1.10.0",
     "node-cron": "^3.0.2",
     "node-telegram-bot-api": "^0.60.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "puppeteer": "^19.5.2",
+    "puppeteer-jquery": "^0.3.4",
+    "validator": "^13.7.0"
   }
 }

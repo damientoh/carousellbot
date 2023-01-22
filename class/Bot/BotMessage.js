@@ -24,6 +24,13 @@ const BotMessage = {
 	keywordDeleted(keyword) {
 		return keyword + ' has been deleted successfully!'
 	},
+	selectParentCategory: 'Please select a parent category.',
+	selectSubCategory: 'Please select a sub category.',
+	invalidParentCategoryNumber: 'The parent category number you entered is invalid.',
+	invalidKeyword: 'The keyword you entered is invalid.',
+	invalidSubCategoryNumber: 'The sub category number you entered is invalid.',
+	selectCategory: 'Please select a category.',
+	invalidCategory: 'The category you entered is invalid.',
 }
 
 module.exports = BotMessage

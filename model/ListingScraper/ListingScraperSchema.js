@@ -5,6 +5,14 @@ const ListingScraperSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	category: {
+		type: String,
+		required: true
+	},
+	categoryUrl: {
+		type: String,
+		required: true
+	},
 	usage: {
 		type: Number,
 		required: true,

@@ -3,6 +3,8 @@ const SendOption = require('./SendOption')
 const Notification = require('../../model/Notification/Notification')
 const TelegramBot = require('node-telegram-bot-api')
 const ListingScraper = require('../../model/ListingScraper/ListingScraper')
+const carousellCategories = require('../../static/carousellCategories')
+const validator = require('validator')
 
 class Bot {
 	bot
@@ -16,6 +18,7 @@ class Bot {
 		})
 		this.botMessage = BotMessage
 		this.sendOption = SendOption
+		this.categories = carousellCategories
 		this.isDebug = true
 	}
 
@@ -47,7 +50,7 @@ class Bot {
 	async validateChat(msg) {
 		const chatId = msg.chat.id
 		if (!(await Notification.chatExists(chatId))) {
-			const notification = new Notification({chatId})
+			const notification = new Notification({ chatId })
 			await notification.save()
 		}
 	}
@@ -65,7 +68,7 @@ class Bot {
 		await this.validateChat(msg)
 
 		const chatId = msg.chat.id
-		const formattedKeywords = await this.getFormattedKeywords(chatId)
+		const formattedKeywords = await this.getFormattedScrapers(chatId)
 		await this.sendMessage(chatId, formattedKeywords, this.sendOption.standard)
 	}
 
@@ -73,7 +76,7 @@ class Bot {
 		await this.validateChat(msg)
 
 		const chatId = msg.chat.id
-		const formattedKeywords = await this.getFormattedKeywords(chatId)
+		const formattedKeywords = await this.getFormattedScrapers(chatId)
 		await this.sendMessage(chatId, formattedKeywords)
 
 		const indexPrompt = await this.sendMessage(
@@ -98,7 +101,7 @@ class Bot {
 				}
 
 				await notification.deleteKeywordByIndex(index)
-				
+
 				await this.sendMessage(
 					chatId,
 					BotMessage.keywordDeleted(allKeywords[index]),
@@ -110,8 +113,11 @@ class Bot {
 
 	async doAddNewKeyword(msg) {
 		await this.validateChat(msg)
-
 		const chatId = msg.chat.id
+		await this.requestCategory(chatId)
+	}
+
+	async requestKeyword(chatId, categoryIndex) {
 		const keywordPrompt = await this.sendMessage(
 			chatId,
 			BotMessage.enterKeyword,
@@ -121,29 +127,75 @@ class Bot {
 		this.bot.onReplyToMessage(
 			chatId,
 			keywordPrompt.message_id,
-			(async keywordMessage => {
-				const keyword = keywordMessage.text
-				if (await Notification.hasKeyword(chatId, keyword)) {
-					await this.sendMessage(
+			async function (keywordMessage) {
+				const keyword = this.beautifyKeyword(keywordMessage.text)
+				if (!this.isValidKeyword(keyword)) {
+					return await this.sendMessage(chatId, BotMessage.invalidKeyword, this.sendOption.standard)
+				}
+
+				const category = this.getCategoryNameByIndex(categoryIndex)
+				const categoryUrl = this.categories[this.getCategoryNameByIndex(categoryIndex)]
+
+				if (await Notification.hasKeyword(chatId, keyword, categoryUrl)) {
+					return await this.sendMessage(
 						chatId,
 						this.botMessage.keywordExists(keyword),
 						this.sendOption.standard
 					)
-				} else {
-					await Notification.addKeyword(chatId, keyword)
-					await this.sendMessage(
-						chatId,
-						this.botMessage.keywordAddedSuccessfully(keyword),
-						this.sendOption.standard
-					)
-					await this.sendMessage(
-						chatId,
-						await this.getFormattedKeywords(chatId),
-						this.sendOption.standard
-					)
 				}
-			}).bind(this)
+
+				await Notification.addKeyword(chatId, keyword, category, categoryUrl)
+				await this.sendMessage(
+					chatId,
+					this.botMessage.keywordAddedSuccessfully(keyword),
+					this.sendOption.standard
+				)
+				await this.sendMessage(
+					chatId,
+					await this.getFormattedScrapers(chatId),
+					this.sendOption.standard
+				)
+
+			}.bind(this)
 		)
+	}
+
+	beautifyKeyword(keyword) {
+		return keyword.trim().toLowerCase()
+	}
+
+	isValidKeyword(keyword) {
+		return validator.isAlphanumeric(keyword)
+	}
+
+	async requestCategory(chatId) {
+		await this.sendMessage(chatId, this.formatCategories(), this.sendOption.standard)
+
+		const categoryPrompt = await this.sendMessage(
+			chatId,
+			BotMessage.selectCategory,
+			this.sendOption.forceReply
+		)
+
+		this.bot.onReplyToMessage(
+			chatId,
+			categoryPrompt.message_id,
+			async function (categoryMessage) {
+				const categoryIndex = parseInt(categoryMessage.text) - 1
+				if (!this.isValidCategoryIndex(categoryIndex)) {
+					return await this.sendMessage(chatId, this.botMessage.invalidCategory, this.sendOption.standard)
+				}
+				await this.requestKeyword(chatId, categoryIndex)
+			}.bind(this)
+		)
+	}
+
+	getCategoryNameByIndex(index) {
+		return Object.keys(this.categories)[index]
+	}
+
+	isValidCategoryIndex(categoryIndex) {
+		return Number.isInteger(categoryIndex) && categoryIndex >= 0 && categoryIndex < Object.keys(this.categories).length
 	}
 
 	doHideKeyboard(msg) {
@@ -155,27 +207,26 @@ class Bot {
 		)
 	}
 
-	async getFormattedKeywords(chatId) {
+	async getFormattedScrapers(chatId) {
 		const notification = await Notification.findByChatId(chatId)
-		const allKeywords = await notification.getKeywords()
-		return this.formatKeywords(allKeywords)
+		const allScrapers = await notification.getKeywordsWithCategory()
+		return this.formatScrapers(allScrapers)
 	}
 
-	formatKeywords(allKeywords) {
+	formatScrapers(allScrapers) {
 		let result = ''
 
-		if (!allKeywords) {
+		if (!allScrapers) {
 			return this.botMessage.noKeyword
 		}
 
-		allKeywords.forEach((keyword, index) => {
+		allScrapers.forEach((scraper, index) => {
 			index++
-			result += index + '. ' + keyword
-			result += '\n'
+			result += index + '. ' + scraper.keyword + ' in ' + scraper.category + '\n'
 		})
 
 		result += '\n'
-		result += this.botMessage.numOfKeyword(allKeywords.length)
+		result += this.botMessage.numOfKeyword(allScrapers.length)
 
 		return result
 	}
@@ -218,8 +269,7 @@ class Bot {
 		if (manyListings) {
 			for (const listing of manyListings) {
 				try {
-					const imageUrl = await ListingScraper.getImageUrl(listing.listingUrl)
-					listing.imageUrl = imageUrl
+					listing.imageUrl = await ListingScraper.getImageUrl(listing.listingUrl)
 					await this.sendSingleListing(chatId, listing, keyword)
 					await this.delay(1000)
 				} catch (error) {
@@ -239,6 +289,16 @@ class Bot {
 		} catch (error) {
 			throw error
 		}
+	}
+
+	formatCategories() {
+		let result = ''
+		let index = 1
+		for (const category in this.categories) {
+			result += index + '. ' + category + '\n'
+			index++
+		}
+		return result
 	}
 }
 

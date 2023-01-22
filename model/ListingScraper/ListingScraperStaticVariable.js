@@ -9,6 +9,7 @@ ListingScraper.LINK_SELECTOR = 'a:nth-child(2)'
 ListingScraper.POSTED_DATE_SELECTOR =
 	'p.D_qk.D_pN.D_ql.D_qo.D_qq.D_qu.D_qw.D_wt.D_rC'
 ListingScraper.LISTING_ID_SELECTOR = 'div.D_wb'
+ListingScraper.CAROUSELL_URL = 'https://carousell.sg'
 ListingScraper.CAROUSELL_SEARCH_URL = 'https://www.carousell.sg/search/'
 ListingScraper.CAROUSELL_SEARCH_EXTENSION =
 	'?addRecent=false&canChangeKeyword=false&includeSuggestions=false&sort_by=3'

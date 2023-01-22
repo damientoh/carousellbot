@@ -4,8 +4,6 @@ const Bot = require('./Bot/Bot')
 
 class Notifier {
 	bot
-	messageQueue
-	scrapingQueue
 
 	constructor() {
 		this.bot = new Bot()
@@ -36,6 +34,7 @@ class Notifier {
 	}
 
 	async activateScrapers() {
+
 		const allScrapers = await ListingScraper.find({})
 
 		for (const scraper of allScrapers) {
