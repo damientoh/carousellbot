@@ -3,12 +3,38 @@ const cheerio = require('cheerio')
 const ListingScraperSchema = require('./ListingScraperSchema')
 const mongoose = require('mongoose')
 
+ListingScraperSchema.methods.noKeyword = function () {
+	return this.keyword === '*'
+}
+
+ListingScraperSchema.methods.noCategory = function () {
+	return this.categoryUrl === 'ALL'
+}
+
 ListingScraperSchema.methods.makeSearchUrl = function () {
-	return (
-		this.constructor.CAROUSELL_SEARCH_URL +
-		this.keyword +
-		this.constructor.CAROUSELL_SEARCH_EXTENSION
-	)
+	if (this.noCategory() && this.noKeyword()) {
+		return this.constructor.CAROUSELL_SEARCH_URL +
+			this.constructor.CAROUSELL_SEARCH_EXTENSION
+	}
+
+	if (this.noCategory() && !this.noKeyword()) {
+		return this.constructor.CAROUSELL_SEARCH_URL +
+			this.keyword +
+			this.constructor.CAROUSELL_SEARCH_EXTENSION
+	}
+
+	if (!this.noCategory() && !this.noKeyword()) {
+		return this.constructor.CAROUSELL_URL +
+			this.categoryUrl +
+			this.constructor.CAROUSELL_SEARCH_EXTENSION +
+			'&search=' + this.keyword
+	}
+	if (!this.noCategory() && this.noKeyword()) {
+		return this.constructor.CAROUSELL_URL +
+			this.categoryUrl +
+			this.constructor.CAROUSELL_SEARCH_EXTENSION
+	}
+
 }
 
 ListingScraperSchema.methods.delay = async function delay(time) {
@@ -17,7 +43,8 @@ ListingScraperSchema.methods.delay = async function delay(time) {
 
 ListingScraperSchema.methods.getFirstPageDataFromHtml = function (
 	firstPageHtml
-) {
+)
+{
 	const $ = cheerio.load(firstPageHtml)
 
 	const result = []
@@ -37,27 +64,30 @@ ListingScraperSchema.methods.getFirstPageDataFromHtml = function (
 		const header = $(content).children('a').first()
 		const ownerProfileUrl = carousellBaseUrl + $(header).attr('href').split('?')[0]
 		const postedDate = $(header).children().eq(1).children().eq(1).text()
+		const isBoosted = $(header).children().eq(1).children().eq(1).children().length > 1
 
 		const listingUrl = carousellBaseUrl + $(content).children('a').eq(1).attr('href').split('?')[0]
 		const title = $(content).children('a').eq(1).children('p').eq(0).text()
 		const condition = $(content).children('a').eq(1).children('p').eq(1).text()
 		const price = $(content).children('a').eq(1).children('div').eq(1).text()
-		const validListing = postedDate && (postedDate.indexOf('months') === -1) && (postedDate.indexOf('month') === -1) && (postedDate.indexOf('year') === -1) && (postedDate.indexOf('years') === -1)
+		const validListing = !isBoosted && postedDate && (postedDate.indexOf('months') === -1) && (postedDate.indexOf(
+			'month') === -1) && (postedDate.indexOf('year') === -1) && (postedDate.indexOf('years') === -1)
 
 		if (validListing) {
 			result.push({
-				postedDate,
-				carousellId,
-				title,
-				price,
-				condition,
-				ownerProfileUrl,
-				listingUrl,
-			})
+				            postedDate,
+				            carousellId,
+				            title,
+				            price,
+				            condition,
+				            ownerProfileUrl,
+				            listingUrl,
+			            })
 		}
 
 	})
 
+	console.log(result)
 	return result
 
 }
@@ -79,7 +109,8 @@ ListingScraperSchema.methods.getLastFetchedIds = async function () {
 
 ListingScraperSchema.methods.removeScrapedBeforeListings = async function (
 	allListings
-) {
+)
+{
 	const lastFetchIds = await this.getLastFetchedIds()
 
 	const uniqueListings = []
@@ -97,7 +128,8 @@ ListingScraperSchema.methods.removeScrapedBeforeListings = async function (
 
 ListingScraperSchema.methods.updateScrapedBeforeListings = async function (
 	uniqueListings
-) {
+)
+{
 	if (uniqueListings.length > 0) {
 		const lastFetchIds = uniqueListings.map(listing => listing.carousellId)
 
@@ -159,7 +191,8 @@ ListingScraperSchema.methods.addNotification = async function (notification) {
 
 ListingScraperSchema.methods.deleteNotification = async function (
 	notification
-) {
+)
+{
 	await this.constructor.findOneAndUpdate({ _id: this.id }, { $pull: { notification } })
 	await this.decreaseUsageByOne() // minus 1 from the usage count
 	await this.deleteIfNoUsage() // delete this scraper if there's usage

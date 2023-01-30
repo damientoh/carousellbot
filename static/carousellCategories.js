@@ -1,5 +1,5 @@
 const carousellCategories = {
-	'All Categories': 'all',
+	'All Categories': 'ALL',
 	'Golf': '/categories/sports-equipment-10/sports-games-249/golf-5970/'
 }
 

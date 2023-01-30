@@ -8,7 +8,8 @@ const NotificationSchema = new mongoose.Schema({
 			ref: 'ListingScraper',
 		},
 	],
-	seenIds: [String]
+	seenIds: [String],
+	isPremium: Boolean
 })
 
 module.exports = NotificationSchema

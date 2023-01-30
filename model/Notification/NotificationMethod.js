@@ -10,7 +10,6 @@ NotificationSchema.statics.findByChatId = async function (chatId) {
 	return await this.findOne({ chatId })
 }
 
-// TODO: check if the categoryUrl is the same
 NotificationSchema.methods.HasScraper = async function (listingScraperId, categoryUrl) {
 	const notification = await this.constructor.findById(this.id)
 	await notification.populate('listingScraper')
@@ -33,7 +32,6 @@ NotificationSchema.statics.hasKeyword = async function (chatId, keyword, categor
 	await notification.populate('listingScraper')
 	const scrapers = notification.listingScraper
 	const allKeywords = scrapers.map(scraper => scraper.is(keyword, categoryUrl))
-	console.log(allKeywords)
 	return allKeywords.includes(true)
 }
 
@@ -45,24 +43,24 @@ NotificationSchema.methods.hasKeyword = async function (keyword, categoryUrl) {
 	return allKeywords.includes(true)
 }
 
-NotificationSchema.methods.getKeywords = async function () {
-	const notification = await this.constructor.findById(this.id)
-	await notification.populate('listingScraper')
-	const scrapers = notification.listingScraper
-	return scrapers.map(scraper => scraper.keyword)
-}
+// NotificationSchema.methods.getKeywords = async function () {
+// 	const notification = await this.constructor.findById(this.id)
+// 	await notification.populate('listingScraper')
+// 	const scrapers = notification.listingScraper
+// 	return scrapers.map(scraper => scraper.keyword)
+// }
 
-NotificationSchema.methods.getKeywordsWithCategory = async function () {
-	const notification = await this.constructor.findById(this.id)
-	await notification.populate('listingScraper')
-	const scrapers = notification.listingScraper
-	return scrapers.map(scraper => {
-		return {
-			keyword: scraper.keyword,
-			category: scraper.category,
-		}
-	})
-}
+// NotificationSchema.methods.getKeywordsWithCategory = async function () {
+// 	const notification = await this.constructor.findById(this.id)
+// 	await notification.populate('listingScraper')
+// 	const scrapers = notification.listingScraper
+// 	return scrapers.map(scraper => {
+// 		return {
+// 			keyword: scraper.keyword,
+// 			category: scraper.category,
+// 		}
+// 	})
+// }
 
 NotificationSchema.methods.getKeywordsWithCategory = async function () {
 	const notification = await this.constructor.findById(this.id)

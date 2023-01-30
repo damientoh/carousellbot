@@ -3,23 +3,19 @@ const ListingScraper = require('../model/ListingScraper/ListingScraper')
 const Bot = require('./Bot/Bot')
 
 class Notifier {
-	bot
+	static bot = new Bot()
 
-	constructor() {
-		this.bot = new Bot()
-	}
-
-	async initialize() {
+	static async initialize() {
 		await this.bot.startBot()
 	}
 
-	async delay(time) {
+	static async delay(time) {
 		return new Promise(resolve => {
 			setTimeout(resolve, time)
 		})
 	}
 
-	async removeSeenBeforeAndUpdateListings(chatId, listings) {
+	static async removeSeenBeforeAndUpdateListings(chatId, listings) {
 		if (!listings) return
 
 		const notification = await Notification.findByChatId(chatId)
@@ -33,7 +29,7 @@ class Notifier {
 		return uniqueListings
 	}
 
-	async activateScrapers() {
+	static async activateScrapers() {
 
 		const allScrapers = await ListingScraper.find({})
 
@@ -49,11 +45,18 @@ class Notifier {
 				await this.bot.sendManyListings(
 					notification.chatId,
 					uniqueListings,
-					scraper.keyword
+					scraper.keyword,
+					scraper.category
 				)
 			}
 
 			await this.delay(1000)
+		}
+	}
+
+	static async sendSoldListings(data, priceSold) {
+		for (const chatId of data.chatIds) {
+			await this.bot.sendSoldListing(data, priceSold, chatId)
 		}
 	}
 }

@@ -1,13 +1,14 @@
 const cron = require('node-cron')
 const Notifier = require('./class/Notifier')
 
-const notifier = new Notifier()
 const CategoryGetter = require('./class/CategoryGetter')
 CategoryGetter.refreshCategories()
-	.then(() => notifier.initialize())
+	.then(() => {
+		return Notifier.initialize()
+	})
 	.then(() => {
 		cron.schedule('*/10 * * * * *', async () => {
-			await notifier.activateScrapers()
+			await Notifier.activateScrapers()
 		})
 		console.log('Initialized successfully')
 	})

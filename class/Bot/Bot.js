@@ -5,11 +5,11 @@ const TelegramBot = require('node-telegram-bot-api')
 const ListingScraper = require('../../model/ListingScraper/ListingScraper')
 const carousellCategories = require('../../static/carousellCategories')
 const validator = require('validator')
+const Login = require('../Login')
 
 class Bot {
-	bot
-	botMessage
-	sendOption
+	botMessage = BotMessage
+	sendOption = SendOption
 	isDebug
 
 	constructor() {
@@ -28,6 +28,7 @@ class Bot {
 		this.bot.onText(/\/addkeyword/, await this.doAddNewKeyword.bind(this))
 		this.bot.onText(/\/seekeywords/, await this.doSeeAllKeywords.bind(this))
 		this.bot.onText(/\/deletekeyword/, await this.doDeleteKeywords.bind(this))
+		this.bot.onText(/\/getlogincode/, this.doLogin.bind(this))
 		this.bot.onText(/\/closekeyboard/, this.doHideKeyboard.bind(this))
 		// this.bot.on('callback_query', await this.doCallbackQuery.bind(this))
 		this.startDebug()
@@ -91,7 +92,7 @@ class Bot {
 			async function (indexMessage) {
 				const index = -1 + parseInt(indexMessage.text)
 				const notification = await Notification.findByChatId(chatId)
-				const allKeywords = await notification.getKeywords()
+				const allKeywords = await notification.getKeywordsWithCategory()
 
 				if (Number.isNaN(index) || !(index < allKeywords.length) || index < 0) {
 					return await this.sendMessage(
@@ -104,7 +105,7 @@ class Bot {
 
 				await this.sendMessage(
 					chatId,
-					BotMessage.keywordDeleted(allKeywords[index]),
+					BotMessage.keywordDeleted(allKeywords[index].keyword),
 					this.sendOption.standard
 				)
 			}.bind(this)
@@ -115,6 +116,14 @@ class Bot {
 		await this.validateChat(msg)
 		const chatId = msg.chat.id
 		await this.requestCategory(chatId)
+	}
+
+	async doLogin(msg) {
+		await this.validateChat(msg)
+		const chatId = msg.chat.id
+		const loginCode = await Login.initialize(chatId)
+
+		await this.sendMessage(chatId, this.botMessage.login(loginCode), this.sendOption.standard)
 	}
 
 	async requestKeyword(chatId, categoryIndex) {
@@ -165,7 +174,8 @@ class Bot {
 	}
 
 	isValidKeyword(keyword) {
-		return validator.isAlphanumeric(keyword)
+		keyword = this.beautifyKeyword(keyword)
+		return validator.isAlphanumeric(keyword) || keyword === '*'
 	}
 
 	async requestCategory(chatId) {
@@ -231,10 +241,10 @@ class Bot {
 		return result
 	}
 
-	formatListing(listing, keyword) {
+	formatListing(listing, keyword, category) {
 		if (listing) {
 			let result = ''
-			result += '(' + keyword + ') '
+			result += '(' + keyword + ' in ' + category + ') '
 			result += listing.title + '\n'
 			result += '<strong>' + listing.price + '</strong>\n'
 			result += listing.postedDate
@@ -245,7 +255,7 @@ class Bot {
 		return BotMessage.listingError
 	}
 
-	async sendSingleListing(chatId, listing, keyword) {
+	async sendSingleListing(chatId, listing, keyword, category) {
 		if (listing) {
 			try {
 				if (!listing.listingUrl || !listing.imageUrl) {
@@ -255,7 +265,7 @@ class Bot {
 					chatId,
 					listing.imageUrl,
 					this.sendOption.singleListing(
-						this.formatListing(listing, keyword),
+						this.formatListing(listing, keyword, category),
 						listing.listingUrl
 					)
 				)
@@ -265,12 +275,12 @@ class Bot {
 		}
 	}
 
-	async sendManyListings(chatId, manyListings, keyword) {
+	async sendManyListings(chatId, manyListings, keyword, category) {
 		if (manyListings) {
 			for (const listing of manyListings) {
 				try {
 					listing.imageUrl = await ListingScraper.getImageUrl(listing.listingUrl)
-					await this.sendSingleListing(chatId, listing, keyword)
+					await this.sendSingleListing(chatId, listing, keyword, category)
 					await this.delay(1000)
 				} catch (error) {
 					throw error
@@ -300,6 +310,20 @@ class Bot {
 		}
 		return result
 	}
+
+	// TODO work on this send sold listing
+	async sendSoldListing(data, priceSold, chatId) {
+		const options = this.sendOption.singleListing(this.formatSoldListing(data.title, data.postedDate, priceSold),
+		                                              data.url)
+		await this.sendMessageWithPhoto(chatId, data.imageUrl, options)
+	}
+
+	formatSoldListing(title, postedDate, priceSold) {
+		const differenceInCalendarDays = require('date-fns/differenceInCalendarDays')
+		const days = differenceInCalendarDays(new Date(postedDate), Date.now())
+		return 'SOLD: ' + title + '\n' + 'Sold in ' + days + '\n' + ' @ ' + priceSold
+	}
+
 }
 
 module.exports = Bot

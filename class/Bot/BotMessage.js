@@ -1,7 +1,7 @@
 const BotMessage = {
 	welcomeMessage:
 		'Welcome to Carousell Bot. Please select an option from the menu.',
-	enterKeyword: 'Please enter a keyword.',
+	enterKeyword: 'Please enter a keyword. Enter * if you want to track the entire category.',
 	keywordExists(keyword) {
 		return 'The keyword ' + keyword + ' is already being tracked'
 	},
@@ -31,6 +31,9 @@ const BotMessage = {
 	invalidSubCategoryNumber: 'The sub category number you entered is invalid.',
 	selectCategory: 'Please select a category.',
 	invalidCategory: 'The category you entered is invalid.',
+	login(code) {
+		return code + ' is your login code. Please enter it in the login page. Your code will expire in 3 minutes.'
+	}
 }
 
 module.exports = BotMessage
