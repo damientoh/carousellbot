@@ -8,7 +8,7 @@ ListingScraperSchema.methods.noKeyword = function () {
 }
 
 ListingScraperSchema.methods.noCategory = function () {
-	return this.categoryUrl === 'ALL'
+	return this.categoryUrl === 'ALL' || this.categoryUrl === undefined
 }
 
 ListingScraperSchema.methods.makeSearchUrl = function () {
