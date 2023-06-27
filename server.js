@@ -1,6 +1,7 @@
 const express = require('express')
 require('dotenv').config()
 const { connectToDb } = require('./database/database')
+require('./Queue/ScrapingQueue')
 
 // Initiate app
 const app = express()

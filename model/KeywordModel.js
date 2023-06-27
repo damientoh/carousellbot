@@ -17,7 +17,7 @@ const KeywordSchema = new mongoose.Schema({
 		}
 	],
 	prevIds: {
-		type: [String],
+		type: [Number],
 		default: []
 	}
 })

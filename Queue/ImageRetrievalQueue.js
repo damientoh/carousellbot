@@ -1,5 +1,6 @@
 const Queue = require('bull')
 const Scraper = require('../class/Scraper')
+const messagingQueue = require('./MessagingQueue')
 
 const imageRetrievalQueue = new Queue('image retrieval') // create image retrieval queue
 

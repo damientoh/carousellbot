@@ -139,27 +139,39 @@ class TelegramChat {
 	}
 
 	/**
-	 * Adds a list of Carousell IDs to the seenIds of the specified chat.
-	 * Keeps the size of the seenIds array at a maximum of 250.
-	 * @param {ObjectId} mongooseChatId - The Mongoose ObjectId of the chat to which the Carousell IDs will be
-	 *     added.
-	 * @param {string[]} carousellIds - A list of Carousell IDs to add.
-	 * @returns {Promise<void>}
-	 * @throws {Error} If there was an error adding the Carousell IDs.
+	 * Checks if a Carousell ID has been seen in the specified chat. If not, adds it to the chat.
+	 * If the size of the seenIds array exceeds 500, it is reduced to the last 250 items.
+	 * @param {number} chatId - The chatId of the Telegram chat to check and potentially add the Carousell ID to.
+	 * @param {number} carousellId - The Carousell ID to check and potentially add.
+	 * @returns {Promise<boolean>} Returns true if the Carousell ID has been seen before, false if not.
+	 * @throws {Error} If there was an error during the process.
 	 */
-	static async addSeenIds(mongooseChatId, carousellIds) {
+	static async hasSeenId(chatId, carousellId) {
 		try {
+			// Find the chat by chatId
+			const chat = await TelegramChatModel.findOne({ chatId: chatId })
+
+			// If the Carousell ID has been seen before, return true
+			if (chat.seenIds.includes(carousellId)) {
+				return true
+			}
+
+			// Add the new Carousell ID
+			chat.seenIds.push(carousellId)
+
+			// If the length exceeds 500, keep the last 250
+			if (chat.seenIds.length > 500) {
+				chat.seenIds = chat.seenIds.slice(-250)
+			}
+
+			// Update the chat with new seenIds
 			await TelegramChatModel.updateOne(
-				{ _id: mongooseChatId },
-				{
-					$push: {
-						seenIds: {
-							$each: carousellIds,
-							$slice: -250 // Keep only the last 250 elements.
-						}
-					}
-				}
+				{ chatId: chatId },
+				{ $set: { seenIds: chat.seenIds } }
 			)
+
+			// If the Carousell ID hasn't been seen before, return false
+			return false
 		} catch (error) {
 			throw error
 		}

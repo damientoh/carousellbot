@@ -13,4 +13,6 @@ bot.onText(/\/seekeywords/, TelegramAction.seeKeywords)
 bot.onText(/\/addkeyword/, TelegramAction.addKeyword)
 bot.onText(/\/deletekeyword/, TelegramAction.deleteKeyword)
 
+bot.on('polling_error', msg => console.log(msg))
+
 module.exports = bot

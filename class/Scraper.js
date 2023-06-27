@@ -137,6 +137,8 @@ class Scraper {
 			}
 		})
 
+		result.reverse()
+
 		return result
 	}
 
@@ -148,9 +150,9 @@ class Scraper {
 	 */
 	makeUrl() {
 		if (this.keyword === '*') {
-			return this.link
+			return `${this.link}?sort_by=3`
 		} else {
-			return `${this.link}?search=${this.keyword}`
+			return `${this.link}?search=${this.keyword}&sort_by=3`
 		}
 	}
 
@@ -171,10 +173,16 @@ class Scraper {
 			// Filter out seen listings
 			await this.filterScrapedListings()
 
-			// Update the previous fetch IDs
+			// No listing for the first scrape
+			const prevIds = await Keyword.getPrevIds(this.keywordId)
+
 			await this.updatePrevIds()
+
+			if (prevIds.length === 0) {
+				this.listings = []
+			}
 		} catch (error) {
-			throw new Error('Failed to scrape the web page.')
+			throw error
 		}
 	}
 
@@ -188,9 +196,9 @@ class Scraper {
 			const carousellIds = this.listings.map(
 				listing => listing.carousellId
 			)
-			await Keyword.updatePrevIds(this.keywordId, carousellIds)
+			await Keyword.addScrapedIds(this.keywordId, carousellIds)
 		} catch (error) {
-			throw new Error('Failed to update the previous fetch IDs.')
+			throw error
 		}
 	}
 

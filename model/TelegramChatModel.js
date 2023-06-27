@@ -14,7 +14,8 @@ const TelegramChatSchema = new mongoose.Schema({
 	],
 	seenIds: [
 		{
-			type: String
+			type: Number,
+			default: []
 		}
 	]
 })

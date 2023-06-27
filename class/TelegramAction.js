@@ -98,7 +98,11 @@ class TelegramAction {
 				msg.chat.id,
 				TelegramTemplate.keywordAddedSuccessfully(keyword)
 			)
-			await TelegramAction.seeKeywords(msg)
+
+			await Promise.all([
+				TelegramAction.seeKeywords(msg),
+				Keyword.addToScrapingQueue(keywordObj)
+			])
 		} catch (error) {
 			await TelegramSender.sendMessage(msg.chat.id, error.message)
 		}
