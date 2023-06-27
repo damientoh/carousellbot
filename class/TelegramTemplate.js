@@ -1,12 +1,21 @@
-const BotMessage = {
+module.exports = {
 	welcomeMessage:
 		'Welcome to Carousell Bot. Please select an option from the menu.',
-	enterKeyword: 'Please enter a keyword. Enter * if you want to track the entire category.',
+	enterKeyword:
+		'Please enter a keyword. Enter * if you want to track the entire category.',
 	keywordExists(keyword) {
-		return 'The keyword ' + keyword + ' is already being tracked'
+		return (
+			'The keyword ' +
+			keyword +
+			' with the link is already being tracked.'
+		)
 	},
 	keywordAddedSuccessfully(keyword) {
-		return 'The keyword ' + keyword + ' has been added and will now be tracked.'
+		return (
+			'The keyword ' +
+			keyword +
+			' has been added and will now be tracked.'
+		)
 	},
 	keyboardClosed: 'Closed successfully. Press /start to see keyboard again.',
 	noKeyword:
@@ -20,20 +29,25 @@ const BotMessage = {
 	numOfKeyword(number) {
 		return 'There is a total of ' + number + ' keyword(s).'
 	},
-	unrecognisedCommand: 'I\'m sorry, I don\'t understand that command.',
+	unrecognisedCommand: "I'm sorry, I don't understand that command.",
 	keywordDeleted(keyword) {
-		return keyword + ' has been deleted successfully!'
+		return keyword + ' has been deleted successfully.'
 	},
 	selectParentCategory: 'Please select a parent category.',
 	selectSubCategory: 'Please select a sub category.',
-	invalidParentCategoryNumber: 'The parent category number you entered is invalid.',
+	invalidParentCategoryNumber:
+		'The parent category number you entered is invalid.',
 	invalidKeyword: 'The keyword you entered is invalid.',
 	invalidSubCategoryNumber: 'The sub category number you entered is invalid.',
 	selectCategory: 'Please select a category.',
 	invalidCategory: 'The category you entered is invalid.',
 	login(code) {
-		return code + ' is your login code. Please enter it in the login page. Your code will expire in 3 minutes.'
-	}
+		return (
+			code +
+			' is your login code. Please enter it in the login page. Your code will expire in 3 minutes.'
+		)
+	},
+	askCarousellLink: 'Please provide the Carousell link you want to track.',
+	askKeyword:
+		'Please provide a keyword. If you do not have a keyword, enter "*".'
 }
-
-module.exports = BotMessage
