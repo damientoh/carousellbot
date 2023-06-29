@@ -169,15 +169,29 @@ class Scraper {
 			// Extract listings from the first page
 			// Update the listings
 			this.listings = Scraper._getFirstPageDataFromHtml(firstPage.data)
+		} catch (error) {
+			throw error
+		}
+	}
 
+	/**
+	 * Processes listings: filters seen listings, updates previous fetched IDs, and clears listings if it's the
+	 * first scrape.
+	 * @returns {Promise<void>}
+	 * @throws {Error} If processing the listings fails.
+	 */
+	async processListings() {
+		try {
 			// Filter out seen listings
 			await this.filterScrapedListings()
 
-			// No listing for the first scrape
+			// Fetch previous IDs
 			const prevIds = await Keyword.getPrevIds(this.keywordId)
 
+			// Update previous IDs
 			await this.updatePrevIds()
 
+			// Clear listings if it's the first scrape
 			if (prevIds.length === 0) {
 				this.listings = []
 			}

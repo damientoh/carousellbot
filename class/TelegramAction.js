@@ -79,11 +79,36 @@ class TelegramAction {
 			const keyword = keywordResponse.trim().toLowerCase()
 
 			// Check if the keyword and link exist for this chat
-			await TelegramValidate.userKeyword(
+			const validKeyword =
+				TelegramValidate.isValidKeyword(keyword) &&
+				!TelegramValidate.isCommand(keyword)
+
+			const userHasKeyword = await TelegramValidate.userHasKeyword(
 				msg.chat.id,
 				keyword,
 				linkResponse
 			)
+
+			const isValidLink = await TelegramValidate.isValidLink(
+				linkResponse,
+				keyword
+			)
+
+			if (!validKeyword || !isValidLink) {
+				await TelegramSender.sendMessage(
+					msg.chat.id,
+					TelegramTemplate.invalidKeyword
+				)
+				return
+			}
+
+			if (userHasKeyword) {
+				await TelegramSender.sendMessage(
+					msg.chat.id,
+					TelegramTemplate.keywordExists(keyword)
+				)
+				return
+			}
 
 			// If they do not exist, add them to the chat's keywords
 			const keywordObj = await Keyword.upsert(keyword, linkResponse)
@@ -103,9 +128,7 @@ class TelegramAction {
 				TelegramAction.seeKeywords(msg),
 				Keyword.addToScrapingQueue(keywordObj)
 			])
-		} catch (error) {
-			await TelegramSender.sendMessage(msg.chat.id, error.message)
-		}
+		} catch (error) {}
 	}
 
 	/**
