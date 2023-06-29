@@ -160,11 +160,14 @@ class Keyword {
 		try {
 			const scrapingQueue = require('../Queue/ScrapingQueue')
 			// Create a new job with the link and keyword from the keyword object
-			await scrapingQueue.add({
-				link: keyword.link,
-				keyword: keyword.keyword,
-				keywordId: keyword._id
-			})
+			await scrapingQueue.add(
+				{
+					link: keyword.link,
+					keyword: keyword.keyword,
+					keywordId: keyword._id
+				},
+				{ attempts: 2 }
+			)
 		} catch (error) {
 			throw error
 		}

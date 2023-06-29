@@ -3,6 +3,11 @@ const Scraper = require('../class/Scraper')
 const Keyword = require('../class/Keyword')
 const imageRetrievalQueue = require('./ImageRetrievalQueue')
 
+/**
+ * Represents a job queue for web scraping tasks.
+ * @type {Queue}
+ * @const
+ */
 const scrapingQueue = new Queue('scraping')
 
 // Process scraping jobs.
@@ -21,9 +26,7 @@ scrapingQueue.process(async (job, done) => {
 		}
 
 		await scraper.scrape()
-
-		// Re-add the job to the queue
-		await scrapingQueue.add(job.data)
+		await scraper.processListings()
 
 		// When a scraping job finishes, add a job to the image retrieval queue for each listing.
 		for (const listing of scraper.listings) {
