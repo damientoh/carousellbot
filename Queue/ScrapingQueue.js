@@ -57,6 +57,15 @@ scrapingQueue.process(async (job, done) => {
 			jobData: job.data
 		})
 
+		if (scraper.listings.length === 0) {
+			winston.log('info', 'Deleted invalid url job from scraping queue', {
+				jobId: job.id,
+				keywordId: job.data.keywordId,
+				jobData: job.data
+			})
+			done()
+		}
+
 		await scraper.processListings()
 		winston.log('info', 'Listings processed', {
 			jobId: job.id,
@@ -64,7 +73,10 @@ scrapingQueue.process(async (job, done) => {
 			jobData: job.data
 		})
 
-		await scrapingQueue.add(job.data, { attempts: 2 })
+		await scrapingQueue.add(job.data, {
+			attempts: 2,
+			removeOnComplete: true
+		})
 		winston.log('info', 'Added job back to scraping queue', {
 			jobId: job.id,
 			keywordId: job.data.keywordId,
@@ -73,7 +85,13 @@ scrapingQueue.process(async (job, done) => {
 
 		// When a scraping job finishes, add a job to the image retrieval queue for each listing.
 		for (const listing of scraper.listings) {
-			await imageRetrievalQueue.add({ listing, chatIds })
+			await imageRetrievalQueue.add(
+				{ listing, chatIds },
+				{
+					attempts: 2,
+					removeOnComplete: true
+				}
+			)
 			winston.log('info', 'Added job to image retrieval queue', {
 				jobId: job.id,
 				keywordId: job.data.keywordId,
@@ -84,7 +102,7 @@ scrapingQueue.process(async (job, done) => {
 		}
 
 		// Delay before finishing this job and moving on to the next
-		await new Promise(resolve => setTimeout(resolve, 120 * 1000))
+		await new Promise(resolve => setTimeout(resolve, 10 * 1000))
 		winston.log('info', 'Finished processing scraping job', {
 			jobId: job.id,
 			keywordId: job.data.keywordId,

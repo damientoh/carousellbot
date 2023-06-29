@@ -177,13 +177,12 @@ class Keyword {
 			const scrapingQueue = require('../Queue/ScrapingQueue')
 			// Create a new job with the link and keyword from the keyword object
 			await scrapingQueue.add(
-				keyword._id,
 				{
 					link: keyword.link,
 					keyword: keyword.keyword,
 					keywordId: keyword._id
 				},
-				{ attempts: 2 }
+				{ attempts: 2, removeOnComplete: true }
 			)
 		} catch (error) {
 			winston.log('error', 'not able to add to scraping queue', {

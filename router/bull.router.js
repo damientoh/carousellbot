@@ -3,12 +3,18 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 const scrapingQueue = require('../Queue/ScrapingQueue')
+const imageRetrievalQueue = require('../Queue/ImageRetrievalQueue')
+const messagingQueue = require('../Queue/MessagingQueue')
 
 const serverAdapter = new ExpressAdapter()
 serverAdapter.setBasePath('/admin/queues')
 
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
-	queues: [new BullAdapter(scrapingQueue)],
+	queues: [
+		new BullAdapter(scrapingQueue),
+		new BullAdapter(imageRetrievalQueue),
+		new BullAdapter(messagingQueue)
+	],
 	serverAdapter: serverAdapter
 })
 
