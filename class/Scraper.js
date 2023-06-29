@@ -1,6 +1,7 @@
 const axios = require('axios')
 const cheerio = require('cheerio')
 const Keyword = require('../class/Keyword')
+const winston = require('../winston')
 
 /**
  * Represents a web scraper that extracts information based on a provided link and keyword.
@@ -32,11 +33,14 @@ class Scraper {
 	 */
 	static async getImageUrl(listingUrl) {
 		try {
-			const page = await axios.get(listingUrl)
+			winston.log('info', 'start getImageUrl', { listingUrl })
+			const page = await axios.get(listingUrl, { timeout: 10000 })
 			const $ = cheerio.load(page.data)
+			winston.log('info', 'success getImageUrl', { listingUrl })
 			return $('meta[property="og:image"]').attr('content')
 		} catch (error) {
-			throw new Error('Failed to retrieve the image URL.')
+			winston.log('error', 'failed to getImageUrl', { listingUrl, error })
+			throw error
 		}
 	}
 
@@ -164,12 +168,18 @@ class Scraper {
 	async scrape() {
 		try {
 			// Retrieve the first page HTML
-			const firstPage = await axios.get(this.makeUrl())
+			const firstPage = await axios.get(this.makeUrl(), {
+				timeout: 10000 // Wait for 10 seconds
+			})
 
 			// Extract listings from the first page
 			// Update the listings
 			this.listings = Scraper._getFirstPageDataFromHtml(firstPage.data)
 		} catch (error) {
+			winston.log('error', 'failed to scrape', {
+				url,
+				listingUrl: this.makeUrl()
+			})
 			throw error
 		}
 	}
@@ -227,35 +237,6 @@ class Scraper {
 			this.listings = this.listings.filter(
 				listing => !prevIds.includes(listing.carousellId)
 			)
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Adds listings to a Bull queue.
-	 * @param {Queue} queue - The Bull queue to add listings to.
-	 * @param {Object[]} listings - The listings to add to the queue.
-	 * @returns {Promise<void>}
-	 * @throws {Error} If adding listings to the queue fails.
-	 */
-	async addListingsToQueue(queue, listings) {
-		try {
-			// Retrieve the chat IDs associated with the keyword
-			const chatIds = await Keyword.getChatIds(this.keywordId)
-
-			// Loop through each chat ID
-			for (let i = 0; i < chatIds.length; i++) {
-				const chatId = chatIds[i]
-
-				// Loop through each listing
-				for (let j = 0; j < listings.length; j++) {
-					const listing = listings[j]
-
-					// Add the listing and chat ID to the queue
-					await queue.add({ listing, chatId })
-				}
-			}
 		} catch (error) {
 			throw error
 		}
