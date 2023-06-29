@@ -57,6 +57,15 @@ scrapingQueue.process(async (job, done) => {
 			jobData: job.data
 		})
 
+		if (scraper.listings.length === 0) {
+			winston.log('info', 'Deleted invalid url job from scraping queue', {
+				jobId: job.id,
+				keywordId: job.data.keywordId,
+				jobData: job.data
+			})
+			done()
+		}
+
 		await scraper.processListings()
 		winston.log('info', 'Listings processed', {
 			jobId: job.id,
@@ -84,7 +93,7 @@ scrapingQueue.process(async (job, done) => {
 		}
 
 		// Delay before finishing this job and moving on to the next
-		await new Promise(resolve => setTimeout(resolve, 120 * 1000))
+		await new Promise(resolve => setTimeout(resolve, 10 * 1000))
 		winston.log('info', 'Finished processing scraping job', {
 			jobId: job.id,
 			keywordId: job.data.keywordId,

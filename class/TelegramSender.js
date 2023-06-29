@@ -12,7 +12,21 @@ class TelegramSender {
 	 */
 	static async sendSingleListing(chatId, listing) {
 		try {
-			await this.sendMessageWithPhoto(
+			const hasImage = listing.imageUrl
+
+			if (!hasImage) {
+				await TelegramSender.sendMessage(
+					chatId,
+					TelegramFormatter.formatListing(listing),
+					TelegramSendOption.inlineButton(
+						'View on Carousell',
+						listing.listingUrl
+					)
+				)
+				return
+			}
+
+			await TelegramSender.sendMessageWithPhoto(
 				chatId,
 				listing.imageUrl,
 				TelegramSendOption.singleListing(

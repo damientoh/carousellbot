@@ -3,39 +3,52 @@ const Scraper = require('../class/Scraper')
 const messagingQueue = require('./MessagingQueue')
 const winston = require('../winston')
 
-const imageRetrievalQueue = new Queue('image retrieval') // create image retrieval queue
+const imageRetrievalQueue = new Queue('imageRetrieval')
 
 // Process image retrieval jobs.
 imageRetrievalQueue.process(async (job, done) => {
-	try {
 		winston.log('info', 'Start processing image retrieval job', {
-			data: job.data
+				data: job.data
 		})
 
-		job.data.listing.imageUrl = await Scraper.getImageUrl(
-			job.data.listing.listingUrl
-		)
+		try {
+				// Delay before starting
+				await new Promise(resolve => setTimeout(resolve, 5 * 1000))
 
-		// When an image retrieval job finishes, add a job to the messaging queue.
-		await messagingQueue.add({
-			listing: job.data.listing,
-			chatIds: job.data.chatIds
-		})
+				job.data.listing.imageUrl = await Scraper.getImageUrl(
+					job.data.listing.listingUrl
+				)
+				winston.log('info', 'Image URL retrieved successfully', {
+						data: job.data
+				})
+		} catch (error) {
+				winston.log('error', 'Error retrieving image URL', {
+						data: job.data,
+						error
+				})
+		}
 
-		// Delay before finishing this job and moving on to the next
-		await new Promise(resolve => setTimeout(resolve, 5 * 1000))
+		try {
+				// When an image retrieval job finishes, add a job to the messaging queue.
+				await messagingQueue.add({
+						                         listing: job.data.listing,
+						                         chatIds: job.data.chatIds
+				                         })
+				winston.log('info', 'Added job to messaging queue', {
+						data: job.data
+				})
+		} catch (error) {
+				winston.log('error', 'Error adding job to messaging queue', {
+						data: job.data,
+						error
+				})
+		}
 
 		winston.log('info', 'Finished processing image retrieval job', {
-			data: job.data
+				data: job.data
 		})
+
 		done()
-	} catch (error) {
-		winston.log('error', 'Error processing image retrieval job', {
-			data: job.data,
-			error
-		})
-		done(error)
-	}
 })
 
 module.exports = imageRetrievalQueue

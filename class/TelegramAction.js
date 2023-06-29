@@ -128,7 +128,9 @@ class TelegramAction {
 				TelegramAction.seeKeywords(msg),
 				Keyword.addToScrapingQueue(keywordObj)
 			])
-		} catch (error) {}
+		} catch (error) {
+			await TelegramSender.sendMessage(msg.chat.id, error.message)
+		}
 	}
 
 	/**
