@@ -1,8 +1,10 @@
 const express = require('express')
 require('dotenv').config()
 const { connectToDb } = require('./database/database')
-require('./Queue/ScrapingQueue')
+const scrapingQueue = require('./Queue/ScrapingQueue')
 const serverAdapter = require('./router/bull.router')
+const winston = require('./winston')
+const Keyword = require('./class/Keyword')
 
 // Initiate app
 const app = express()
@@ -19,6 +21,27 @@ app.use('/admin/queues', serverAdapter.getRouter())
 
 // App listen
 app.listen(process.env.PORT || 3000, async () => {
-	console.log(`Server is listening to PORT ${process.env.PORT || 3000}`)
+	winston.log(
+		'info',
+		`Server is listening to PORT ${process.env.PORT || 3000}`
+	)
 	await connectToDb()
+
+	// Empty the queue
+	await scrapingQueue.empty()
+
+	// Clean all completed jobs from queue
+	await scrapingQueue.clean(0, 'completed')
+
+	// Clean all failed jobs from queue
+	await scrapingQueue.clean(0, 'failed')
+
+	// Clean all delayed jobs from queue
+	await scrapingQueue.clean(0, 'delayed')
+
+	// Clean all active jobs from queue
+	await scrapingQueue.clean(0, 'active')
+
+	winston.log('info', 'ScrapingQueue has been emptied')
+	await Keyword.addAllKeywordsToQueue()
 })

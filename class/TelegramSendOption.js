@@ -30,6 +30,20 @@ const TelegramSendOption = {
 		}
 
 		return options
+	},
+	inlineButton(text, url) {
+		return {
+			reply_markup: {
+				inline_keyboard: [
+					[
+						{
+							text,
+							url
+						}
+					]
+				]
+			}
+		}
 	}
 }
 

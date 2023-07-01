@@ -1,4 +1,5 @@
 const KeywordModel = require('../model/KeywordModel')
+const winston = require('../winston')
 
 /**
  * Represents a keyword entity.
@@ -12,9 +13,24 @@ class Keyword {
 	 */
 	static async getPrevIds(keywordId) {
 		try {
+			winston.log('info', 'start getPrevIds', { keywordId })
+
 			const existingKeyword = await KeywordModel.findById(keywordId)
+
+			if (!existingKeyword) {
+				winston.log(
+					'warning',
+					'existing keyword not found in getPrevIds',
+					{ keywordId }
+				)
+				return []
+			}
+
+			winston.log('info', 'getPrevIds successful')
+
 			return existingKeyword.prevIds
 		} catch (error) {
+			winston.log('error', 'getPrevIds failed', { error })
 			throw error
 		}
 	}
@@ -166,9 +182,41 @@ class Keyword {
 					keyword: keyword.keyword,
 					keywordId: keyword._id
 				},
-				{ attempts: 2 }
+				{ attempts: 2, removeOnComplete: true }
 			)
 		} catch (error) {
+			winston.log('error', 'not able to add to scraping queue', {
+				error,
+				...{
+					link: keyword.link,
+					keyword: keyword.keyword,
+					keywordId: keyword._id
+				}
+			})
+			throw error
+		}
+	}
+
+	/**
+	 * Retrieves all keywords from the database and adds them to the scraping queue.
+	 * @returns {Promise<void>}
+	 * @throws {Error} If retrieving the keywords or adding them to the queue fails.
+	 */
+	static async addAllKeywordsToQueue() {
+		try {
+			winston.log('info', 'start addAllKeywordsToQueue')
+
+			// Retrieve all keywords from the database
+			const allKeywords = await KeywordModel.find()
+
+			// For each keyword, add it to the scraping queue
+			for (const keyword of allKeywords) {
+				await this.addToScrapingQueue(keyword)
+			}
+
+			winston.log('info', 'addAllKeywordsToQueue successful')
+		} catch (error) {
+			winston.log('error', 'addAllKeywordsToQueue failed', { error })
 			throw error
 		}
 	}
