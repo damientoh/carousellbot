@@ -57,7 +57,12 @@ scrapingQueue.process(async (job, done) => {
 		// When a scraping job finishes, add a job to the image retrieval queue for each listing.
 		for (const listing of scraper.listings) {
 			await imageRetrievalQueue.add(
-				{ listing, chatIds, telegramChats },
+				{
+					listing,
+					chatIds,
+					telegramChats,
+					keywordId: job.data.keywordId
+				},
 				{
 					attempts: 2,
 					removeOnComplete: true

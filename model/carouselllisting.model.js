@@ -36,6 +36,10 @@ const CarousellListingSchema = new mongoose.Schema(
 			type: Number,
 			required: false,
 			default: 2 * 60 * 60 * 1000
+		},
+		keyword: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Keyword'
 		}
 	},
 	{

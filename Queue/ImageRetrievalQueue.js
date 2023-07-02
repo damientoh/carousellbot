@@ -36,9 +36,10 @@ imageRetrievalQueue.process(async (job, done) => {
 		if (!carousellListing) {
 			try {
 				// Try to create a new CarousellListing
-				carousellListing = await CarousellListing.createNew(
-					job.data.listing
-				)
+				carousellListing = await CarousellListing.createNew({
+					...job.data.listing,
+					keyword: job.data.keywordId
+				})
 			} catch (error) {
 				// Log any errors that occur during this process
 				winston.log('error', 'Error creating Carousell listing', {
