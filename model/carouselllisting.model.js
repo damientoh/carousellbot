@@ -18,7 +18,7 @@ const CarousellListingSchema = new mongoose.Schema(
 	{
 		carousellId: { type: Number, required: true, unique: true },
 		title: { type: String, required: false },
-		price: { type: Number, required: false },
+		price: { type: String, required: false },
 		condition: { type: String, required: false },
 		ownerProfileUrl: { type: String, required: false },
 		listingUrl: { type: String, required: false },
