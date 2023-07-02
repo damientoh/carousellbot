@@ -220,6 +220,44 @@ class Keyword {
 			throw error
 		}
 	}
+
+	/**
+	 * Retrieves all telegram chats associated with a specific keyword.
+	 * @param {mongoose.Types.ObjectId} mongooseKeywordId - The Mongoose ObjectId of the keyword.
+	 * @returns {Promise<Object[]>} A promise that resolves with an array of telegram chats.
+	 * @throws {Error} If an error occurs during the process.
+	 */
+	static async getAllTelegramChats(mongooseKeywordId) {
+		try {
+			// Find the keyword document with the provided ID and populate the 'telegramChats' field
+			const keywordDoc = await KeywordModel.findById(
+				mongooseKeywordId
+			).populate('telegramChats', '_id chatId')
+
+			// If no keyword is found, log a warning and return an empty array
+			if (!keywordDoc) {
+				winston.log(
+					'warning',
+					'No keyword found with the provided ID',
+					{ mongooseKeywordId }
+				)
+				return []
+			}
+
+			return keywordDoc.telegramChats
+		} catch (error) {
+			// Log the error and throw it to be handled by the caller
+			winston.log(
+				'error',
+				'An error occurred while getting all Telegram chats for the keyword',
+				{
+					mongooseKeywordId,
+					errorMessage: error.message
+				}
+			)
+			throw error
+		}
+	}
 }
 
 module.exports = Keyword

@@ -14,48 +14,29 @@ const scrapingQueue = new Queue('scraping')
 // Process scraping jobs.
 scrapingQueue.process(async (job, done) => {
 	try {
-		winston.log('info', 'Start processing scraping job', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
-
 		const scraper = new Scraper(
 			job.data.link,
 			job.data.keyword,
 			job.data.keywordId
 		)
 
-		winston.log('info', 'Initialized scraper', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
-
-		const chatIds = await Keyword.getChatIds(job.data.keywordId)
-		winston.log('info', 'Retrieved chatIds', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			chatIds,
-			jobData: job.data
-		})
+		const telegramChats = await Keyword.getAllTelegramChats(
+			job.data.keywordId
+		)
+		const chatIds = telegramChats.map(telegramChat => telegramChat.chatId)
 
 		if (chatIds.length === 0) {
 			winston.log('info', 'No chatIds found', {
 				jobId: job.id,
 				keywordId: job.data.keywordId,
-				jobData: job.data
+				jobData: job.data,
+				telegramChats
 			})
 			done()
 			return
 		}
 
 		await scraper.scrape()
-		winston.log('info', 'Scraping completed', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
 
 		if (scraper.listings.length === 0) {
 			winston.log('info', 'Deleted invalid url job from scraping queue', {
@@ -67,48 +48,25 @@ scrapingQueue.process(async (job, done) => {
 		}
 
 		await scraper.processListings()
-		winston.log('info', 'Listings processed', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
 
 		await scrapingQueue.add(job.data, {
 			attempts: 2,
 			removeOnComplete: true
 		})
-		winston.log('info', 'Added job back to scraping queue', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
 
 		// When a scraping job finishes, add a job to the image retrieval queue for each listing.
 		for (const listing of scraper.listings) {
 			await imageRetrievalQueue.add(
-				{ listing, chatIds },
+				{ listing, chatIds, telegramChats },
 				{
 					attempts: 2,
 					removeOnComplete: true
 				}
 			)
-			winston.log('info', 'Added job to image retrieval queue', {
-				jobId: job.id,
-				keywordId: job.data.keywordId,
-				listing,
-				chatIds,
-				jobData: job.data
-			})
 		}
 
 		// Delay before finishing this job and moving on to the next
 		await new Promise(resolve => setTimeout(resolve, 10 * 1000))
-		winston.log('info', 'Finished processing scraping job', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data
-		})
-
 		done()
 	} catch (err) {
 		winston.log('error', 'Unable to scrape listing', {
