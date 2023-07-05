@@ -27,6 +27,7 @@ statusCheckQueue.process(async (job, done) => {
 			await CarousellListing.setStatus(carousellId, status)
 		} else {
 			if (statusCheckCount > 200) {
+				await CarousellListing.setStatus(carousellId, 'not tracking')
 				done()
 				return
 			}
@@ -74,8 +75,8 @@ statusCheckQueue.on('failed', async (job, error) => {
 			// Destructure the job data
 			const carousellId = job.data.carousellListing.carousellId
 
-			// Mark the listing as 'sold'
-			await CarousellListing.setStatus(carousellId, 'sold')
+			// Mark the listing as 'deleted'
+			await CarousellListing.setStatus(carousellId, 'deleted')
 		} catch (error) {
 			// Log the error using Winston
 			winston.log(

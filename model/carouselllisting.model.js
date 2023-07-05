@@ -1,15 +1,5 @@
 const mongoose = require('mongoose')
-
-/**
- * @typedef {Object} CarousellListing
- * @property {number} carousellId - Unique identifier for the listing
- * @property {string} title - Title of the listing
- * @property {number} price - Price of the listing
- * @property {string} condition - Condition of the item in the listing
- * @property {string} ownerProfileUrl - URL of the owner's profile
- * @property {string} listingUrl - URL of the listing
- * @property {string} imageUrl - URL of the listing image
- */
+const mongoosePaginate = require('mongoose-paginate-v2')
 
 /**
  * Define the schema for a Carousell listing.
@@ -26,7 +16,7 @@ const CarousellListingSchema = new mongoose.Schema(
 		status: {
 			type: String,
 			required: false,
-			enum: ['active', 'deleted', 'sold'],
+			enum: ['active', 'deleted', 'sold', 'reserved', 'not tracking'],
 			default: 'active'
 		},
 		statusChangeAt: { type: Date, required: false, default: Date.now },
@@ -46,6 +36,9 @@ const CarousellListingSchema = new mongoose.Schema(
 		timestamps: true // Adds `createdAt` and `updatedAt` fields automatically
 	}
 )
+
+// Add the plugin to your schema
+CarousellListingSchema.plugin(mongoosePaginate)
 
 /**
  * The `mongoose.model` function converts our schema into a Model.

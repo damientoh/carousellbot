@@ -139,6 +139,36 @@ class CarousellListing {
 			return TWENTY_FOUR_HOURS
 		}
 	}
+
+	/**
+	 * Get paginated CarousellListing with query conditions.
+	 * @param {Object} query - The query conditions.
+	 * @param {number} page - The page number (starts from 1).
+	 * @param {number} limit - The number of items per page.
+	 * @param {Object} sort - The sorting conditions.
+	 * @returns {Promise<Object>} The result containing docs and other pagination info.
+	 */
+	static async getPaginatedListings(
+		query = {},
+		page = 1,
+		limit = 10,
+		sort = {}
+	) {
+		try {
+			return await CarousellListingModel.paginate(query, {
+				page,
+				limit,
+				sort
+			})
+		} catch (error) {
+			winston.log(
+				'error',
+				'An error occurred during the retrieval of paginated listings',
+				{ errorMessage: error.message }
+			)
+			throw error
+		}
+	}
 }
 
 module.exports = CarousellListing

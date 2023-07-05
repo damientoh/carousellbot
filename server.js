@@ -18,6 +18,8 @@ require('./class/TelegramBot')
 
 // Use the bull board router
 app.use('/admin/queues', serverAdapter.getRouter())
+// Register the main router
+app.use('/', require('./router/main.router'))
 
 // App listen
 app.listen(process.env.PORT || 3000, async () => {

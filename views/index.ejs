@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head><%- include('./partials/htmlhead.ejs') %>
+    <!-- Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+    <!-- Daterangepicker -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.js"></script>
+
+    <script type="text/javascript">
+			$(function () {
+					$('#createdAtPicker').datetimepicker({
+							                                     format: 'YYYY-MM-DD'
+					                                     })
+					$('#statusChangeAtPicker').datetimepicker({
+							                                          format: 'YYYY-MM-DD'
+					                                          })
+			})
+    </script>
+    <!-- CSS file -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet"/>
+
+    <!-- JS file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <%- include('./partials/navbar.ejs') %>
+    <%- include('./partials/sidebar.ejs') %>
+    <div class="content-wrapper">
+        <%- include('./partials/contentHeader.ejs') %>
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Filter Listings</h3>
+                            </div>
+                            <div class="card-body">
+                                <form method="GET" action="/">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="keyword">Keyword</label>
+                                                <input type="text" id="keyword" name="keyword" class="form-control"
+                                                       placeholder="Search by Keyword"
+                                                       value="<%= req.query.keyword || '' %>">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="owner">Owner</label>
+                                                <input type="text" id="owner" name="owner" class="form-control"
+                                                       placeholder="Search by Owner"
+                                                       value="<%= req.query.owner || '' %>">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="status">Status</label>
+                                                <select id="status" name="status[]" class="form-control select2-multi"
+                                                        multiple="multiple">
+                                                    <option value="active" <%= (req.query.status && req.query.status.includes(
+                                                            'active')) ? 'selected' : '' %>>
+                                                        Active
+                                                    </option>
+                                                    <option value="reserved" <%= (req.query.status && req.query.status.includes(
+                                                            'reserved')) ? 'selected' : '' %>>
+                                                        Reserved
+                                                    </option>
+                                                    <option value="sold" <%= (req.query.status && req.query.status.includes(
+                                                            'sold')) ? 'selected' : '' %>>
+                                                        Sold
+                                                    </option>
+                                                    <option value="deleted" <%= (req.query.status && req.query.status.includes(
+                                                            'deleted')) ? 'selected' : '' %>>
+                                                        Deleted
+                                                    </option>
+                                                    <option value="not tracking" <%= (req.query.status && req.query.status.includes(
+                                                            'not tracking')) ? 'selected' : '' %>>
+                                                        Not tracking
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="sort">Sort</label>
+                                                <select id="sort" name="sort" class="form-control">
+                                                    <option value="">--</option>
+                                                    <option value="statusCheckCount_asc" <%= req.query.sort === 'statusCheckCount_asc' ? 'selected' : '' %>>
+                                                        Time Sold (ascending)
+                                                    </option>
+                                                    <option value="statusCheckCount_desc" <%= req.query.sort === 'statusCheckCount_desc' ? 'selected' : '' %>>
+                                                        Time Sold (descending)
+                                                    </option>
+                                                    <option value="createdAt_asc" <%= req.query.sort === 'createdAt_asc' ? 'selected' : '' %>>
+                                                        Date Uploaded (ascending)
+                                                    </option>
+                                                    <option value="createdAt_desc" <%= req.query.sort === 'createdAt_desc' ? 'selected' : '' %>>
+                                                        Date Uploaded (descending)
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="keyword">Keyword ID</label>
+                                                <input type="text" placeholder="Enter Keyword ID" id="keyword"
+                                                       name="keyword" class="form-control"
+                                                       value="<%= req.query.keyword || '' %>">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="createdAt">Created At</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                <span class="input-group-text">
+                    <i class="far fa-calendar-alt"></i>
+                </span>
+                                                    </div>
+                                                    <input type="text" id="createdAt" name="createdAt"
+                                                           class="form-control float-right"
+                                                           value="<%= req.query.createdAt || '' %>"
+                                                           placeholder="Filter by Created At">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="statusChangeAt">Status Change At</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">
+                                                            <i class="far fa-calendar-alt"></i>
+                                                        </span>
+                                                    </div>
+                                                    <input type="text" id="statusChangeAt" name="statusChangeAt"
+                                                           class="form-control float-right"
+                                                           value="<%= req.query.statusChangeAt || '' %>"
+                                                           placeholder="Filter by Status Change At">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <button type="submit" class="btn btn-primary">Filter</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Listing</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <% listings.forEach(listing => {
+                                        let ownerUrlArray = listing.ownerProfileUrl.split('/');
+                                        let ownerName = ownerUrlArray[ownerUrlArray.length - 2]; %>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="<%= listing.imageUrl %>" class="img-thumbnail mr-3"
+                                                     style="width: 200px; height: 200px; object-fit: cover;">
+                                                <div>
+                                                    <a href="<%= listing.listingUrl %>"><strong
+                                                                style="max-width: 150px;"><%= listing.title %></strong></a><br/>
+                                                    Price: <%= listing.price %><br/>
+                                                    Condition: <%= listing.condition %><br/>
+                                                    Owner: <a href="<%= listing.ownerProfileUrl %>"><%= ownerName %></a><br/>
+                                                    Carousell ID: <%= listing.carousellId %>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <% if (listing.status === 'active') { %>
+                                                <span class="badge badge-success"><%= listing.status.charAt(0).toUpperCase() + listing.status.slice(
+                                                            1) %></span>
+                                            <% } else if (listing.status === 'sold') { %>
+                                                <span class="badge badge-danger"><%= listing.status.charAt(0).toUpperCase() + listing.status.slice(
+                                                            1) %></span>
+                                            <% } else if (listing.status === 'reserved') { %>
+                                                <span class="badge badge-warning"><%= listing.status.charAt(0).toUpperCase() + listing.status.slice(
+                                                            1) %></span>
+                                            <% } else { %>
+                                                <span class="badge badge-secondary"><%= listing.status.charAt(0).toUpperCase() + listing.status.slice(
+                                                            1) %></span>
+                                            <% } %>
+
+                                            <br/>
+                                            <small>Created: <%= new Date(listing.createdAt).toLocaleDateString() %></small>
+
+                                            <br/>
+                                            <% if (['active', 'not tracking'].includes(listing.status)) { %>
+                                                <small>Last
+                                                    Check: <%= new Date(listing.statusLastCheckedAt).toLocaleDateString() %></small>
+                                            <% } else if (['sold', 'reserved', 'deleted'].includes(listing.status)) { %>
+                                                <small>Sold: <%= new Date(listing.statusChangeAt).toLocaleDateString() %></small>
+                                                <small>(<%= formatDistance((listing.statusChangeAt),
+                                                                           (listing.createdAt)) %>)</small>
+                                            <% } %>
+                                        </td>
+
+                                    </tr>
+                                    <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer clearfix">
+                                <%
+                                function buildQueryParams(page) {
+                                    let params = `?page=${page}`;
+
+                                    // For each existing query parameter
+                                    for (let key in req.query) {
+                                        // Don't include page in the parameters, we already included it
+                                        if (key !== 'page') {
+                                            // Append the key-value pair to the parameters
+                                            params += `&${key}=${req.query[key]}`;
+                                        }
+                                    }
+
+                                    return params;
+                                }
+                                %>
+                                <ul class="pagination pagination-sm justify-content-end">
+                                    <% if (currentPage > 1) { %>
+                                        <li class="page-item">
+                                            <a href="<%= buildQueryParams(currentPage - 1) %>" class="page-link">«</a>
+                                        </li>
+                                    <% } %>
+                                    <% for(let i = Math.max(1, currentPage - 3); i <= Math.min(currentPage + 3,
+                                                                                               totalPages); i++) { %>
+                                        <li class="page-item <%= (currentPage == i) ? 'active' : '' %>">
+                                            <a href="<%= buildQueryParams(i) %>" class="page-link"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    <% if (currentPage < totalPages) { %>
+                                        <li class="page-item">
+                                            <a href="<%= buildQueryParams(currentPage + 1) %>" class="page-link">»</a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <%- include('./partials/footer.ejs') %>
+</div>
+<script type="text/javascript">
+		$(function () {
+				const dateRangeOptions = {
+						autoUpdateInput: false,
+						locale: {
+								format: 'YYYY-MM-DD',
+								cancelLabel: 'Clear'
+						}
+				}
+
+				function handleApplyDateRange(ev, picker) {
+						$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'))
+				}
+
+				function handleCancelDateRange(ev, picker) {
+						$(this).val('')
+				}
+
+				function getDateRangeFromInput(inputId) {
+						const dateRangeText = $(inputId).val()
+						if (dateRangeText) {
+								const dates = dateRangeText.split(' - ')
+								if (dates.length === 2) {
+										return [moment(dates[0], 'YYYY-MM-DD'), moment(dates[1], 'YYYY-MM-DD')]
+								}
+						}
+						// If no valid date range in input, return a default range (last 7 days)
+						return [moment().subtract(6, 'days'), moment()]
+				}
+
+				const createdAtRange = getDateRangeFromInput('#createdAt')
+				const statusChangeAtRange = getDateRangeFromInput('#statusChangeAt')
+
+				$('#createdAt').daterangepicker({
+						                                ...dateRangeOptions,
+						                                startDate: createdAtRange[0],
+						                                endDate: createdAtRange[1]
+				                                })
+				$('#statusChangeAt').daterangepicker({
+						                                     ...dateRangeOptions,
+						                                     startDate: statusChangeAtRange[0],
+						                                     endDate: statusChangeAtRange[1]
+				                                     })
+
+				$('#createdAt').on('apply.daterangepicker', handleApplyDateRange)
+				$('#statusChangeAt').on('apply.daterangepicker', handleApplyDateRange)
+				$('#createdAt').on('cancel.daterangepicker', handleCancelDateRange)
+				$('#statusChangeAt').on('cancel.daterangepicker', handleCancelDateRange)
+		})
+</script>
+<script type="text/javascript">
+		$(document).ready(function () {
+				$('.select2-multi').select2()
+		})
+</script>
+</body>
+</html>
