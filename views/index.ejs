@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head><%- include('./partials/htmlhead.ejs') %>
+<head>
+    <%- include('./partials/htmlhead.ejs') %>
     <!-- Moment.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
@@ -9,22 +10,9 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.js"></script>
 
-    <script type="text/javascript">
-			$(function () {
-					$('#createdAtPicker').datetimepicker({
-							                                     format: 'YYYY-MM-DD'
-					                                     })
-					$('#statusChangeAtPicker').datetimepicker({
-							                                          format: 'YYYY-MM-DD'
-					                                          })
-			})
-    </script>
-    <!-- CSS file -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet"/>
-
-    <!-- JS file -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-
+    <!-- Add this at the head of your HTML document -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 </head>
 <body class="hold-transition sidebar-mini">
@@ -64,30 +52,26 @@
                                         <div class="col-sm-3">
                                             <div class="form-group">
                                                 <label for="status">Status</label>
-                                                <select id="status" name="status[]" class="form-control select2-multi"
+                                                <select id="status" name="status[]" class="form-control"
                                                         multiple="multiple">
                                                     <option value="active" <%= (req.query.status && req.query.status.includes(
-                                                            'active')) ? 'selected' : '' %>>
-                                                        Active
+                                                            'active')) ? 'selected' : '' %>>Active
                                                     </option>
                                                     <option value="reserved" <%= (req.query.status && req.query.status.includes(
-                                                            'reserved')) ? 'selected' : '' %>>
-                                                        Reserved
+                                                            'reserved')) ? 'selected' : '' %>>Reserved
                                                     </option>
                                                     <option value="sold" <%= (req.query.status && req.query.status.includes(
-                                                            'sold')) ? 'selected' : '' %>>
-                                                        Sold
+                                                            'sold')) ? 'selected' : '' %>>Sold
                                                     </option>
                                                     <option value="deleted" <%= (req.query.status && req.query.status.includes(
-                                                            'deleted')) ? 'selected' : '' %>>
-                                                        Deleted
+                                                            'deleted')) ? 'selected' : '' %>>Deleted
                                                     </option>
                                                     <option value="not tracking" <%= (req.query.status && req.query.status.includes(
-                                                            'not tracking')) ? 'selected' : '' %>>
-                                                        Not tracking
+                                                            'not tracking')) ? 'selected' : '' %>>Not tracking
                                                     </option>
                                                 </select>
                                             </div>
+
                                         </div>
                                         <div class="col-sm-3">
                                             <div class="form-group">
@@ -113,10 +97,10 @@
                                     <div class="row">
                                         <div class="col-sm-4">
                                             <div class="form-group">
-                                                <label for="keyword">Keyword ID</label>
-                                                <input type="text" placeholder="Enter Keyword ID" id="keyword"
-                                                       name="keyword" class="form-control"
-                                                       value="<%= req.query.keyword || '' %>">
+                                                <label for="keywordId">Keyword ID</label>
+                                                <input type="text" placeholder="Enter Keyword ID" id="keywordId"
+                                                       name="keywordId" class="form-control"
+                                                       value="<%= req.query.keywordId || '' %>">
                                             </div>
                                         </div>
                                         <div class="col-sm-4">
@@ -177,8 +161,8 @@
                                     </thead>
                                     <tbody>
                                     <% listings.forEach(listing => {
-                                        let ownerUrlArray = listing.ownerProfileUrl.split('/');
-                                        let ownerName = ownerUrlArray[ownerUrlArray.length - 2]; %>
+                                        let ownerUrlArray = listing.ownerProfileUrl.split('/')
+                                        let ownerName = ownerUrlArray[ownerUrlArray.length - 2] %>
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -231,18 +215,18 @@
                             <div class="card-footer clearfix">
                                 <%
                                 function buildQueryParams(page) {
-                                    let params = `?page=${page}`;
+                                    let params = `?page=${page}`
 
                                     // For each existing query parameter
                                     for (let key in req.query) {
                                         // Don't include page in the parameters, we already included it
                                         if (key !== 'page') {
                                             // Append the key-value pair to the parameters
-                                            params += `&${key}=${req.query[key]}`;
+                                            params += `&${key}=${req.query[key]}`
                                         }
                                     }
 
-                                    return params;
+                                    return params
                                 }
                                 %>
                                 <ul class="pagination pagination-sm justify-content-end">
@@ -328,8 +312,10 @@
 </script>
 <script type="text/javascript">
 		$(document).ready(function () {
-				$('.select2-multi').select2()
-		})
+				$('#status').select2({
+						                     placeholder: 'Select an option',
+				                     });
+		});
 </script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const CarousellListing = require('../class/CarousellListing')
+const winston = require('../winston')
+const mongoose = require('mongoose')
 
 // Define your routes
 router.get('/', async (req, res) => {
@@ -9,10 +11,10 @@ router.get('/', async (req, res) => {
 		const page = parseInt(req.query.page) || 1
 
 		// Initialize the page limit, defaulting to 10 if no query parameter is provided
-		const limit = parseInt(req.query.limit) || 10
+		const limit = parseInt(req.query.limit) || 20
 
-		// Initialize the sort object, which will hold the sorting field and direction
-		let sort = {}
+		// Initialize sort object with default values
+		let sort = { createdAt: -1 } // -1 corresponds to 'desc' order
 
 		// Initialize the query object, which will hold the filtering criteria
 		const query = {}
@@ -32,12 +34,18 @@ router.get('/', async (req, res) => {
 		// If a status is provided in the request query, add a filtering criteria for status using a
 		// case-insensitive regex
 		if (req.query.status) {
+			if (typeof req.query.status === 'string') {
+				req.query.status = req.query.status.split(',')
+			}
 			query.status = { $in: req.query.status }
 		}
 
 		// If a sort is provided in the request query, parse the sorting field and direction and add them to
 		// the sort object
 		if (req.query.sort) {
+			// Reset sort object
+			sort = {}
+
 			const [field, order] = req.query.sort.split('_')
 			sort[field] = order === 'desc' ? -1 : 1
 		}
@@ -63,11 +71,11 @@ router.get('/', async (req, res) => {
 		}
 
 		// If a keyword ID is provided in the request query, add a filtering criteria for keyword
-		if (req.query.keyword) {
+		if (req.query.keywordId) {
 			// We need to convert the string to a MongoDB ObjectId
 			let keywordId
 			try {
-				keywordId = mongoose.Types.ObjectId(req.query.keyword)
+				keywordId = mongoose.Types.ObjectId(req.query.keywordId)
 			} catch (error) {
 				// Log error and handle invalid ObjectId format
 				winston.log('error', 'Invalid keyword ID provided', {
@@ -108,13 +116,7 @@ router.get('/', async (req, res) => {
 			'error',
 			'An error occurred during the GET request handling process',
 			{
-				page: req.query.page,
-				limit: req.query.limit,
-				name: req.query.name,
-				owner: req.query.owner,
-				status: req.query.status,
-				sort: req.query.sort,
-				errorMessage: error.message
+				req
 			}
 		)
 	}
