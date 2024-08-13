@@ -4,7 +4,7 @@ const CarousellListing = require('../class/CarousellListing')
 const winston = require('../winston')
 
 // Create a status check queue
-const statusCheckQueue = new Queue('statusCheckQueue')
+const statusCheckQueue = new Queue('statusCheckQueue', process.env.REDISURL)
 
 statusCheckQueue.process(async (job, done) => {
 	try {

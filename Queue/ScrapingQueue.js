@@ -9,7 +9,7 @@ const winston = require('../winston')
  * @type {Queue}
  * @const
  */
-const scrapingQueue = new Queue('scraping')
+const scrapingQueue = new Queue('scraping', process.env.REDISURL)
 
 // Process scraping jobs.
 scrapingQueue.process(async (job, done) => {
@@ -26,12 +26,6 @@ scrapingQueue.process(async (job, done) => {
 		const chatIds = telegramChats.map(telegramChat => telegramChat.chatId)
 
 		if (chatIds.length === 0) {
-			winston.log('info', 'No chatIds found', {
-				jobId: job.id,
-				keywordId: job.data.keywordId,
-				jobData: job.data,
-				telegramChats
-			})
 			done()
 			return
 		}
@@ -39,11 +33,6 @@ scrapingQueue.process(async (job, done) => {
 		await scraper.scrape()
 
 		if (scraper.listings.length === 0) {
-			winston.log('info', 'Deleted invalid url job from scraping queue', {
-				jobId: job.id,
-				keywordId: job.data.keywordId,
-				jobData: job.data
-			})
 			done()
 		}
 
@@ -74,14 +63,6 @@ scrapingQueue.process(async (job, done) => {
 		await new Promise(resolve => setTimeout(resolve, 10 * 1000))
 		done()
 	} catch (err) {
-		winston.log('error', 'Unable to scrape listing', {
-			jobId: job.id,
-			keywordId: job.data.keywordId,
-			jobData: job.data,
-			error: err.message
-		})
-		// Retry
-		await scrapingQueue.add(job.data.keywordId, job.data, { attempts: 2 })
 		done(err)
 	}
 })

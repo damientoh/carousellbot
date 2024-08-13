@@ -6,7 +6,7 @@ const messagingQueue = require('./MessagingQueue')
 const statusCheck = require('./statusCheck.queue')
 const winston = require('../winston')
 
-const imageRetrievalQueue = new Queue('image retrieval') // create image retrieval queue
+const imageRetrievalQueue = new Queue('image retrieval', process.env.REDISURL) // create image retrieval queue
 
 // Process image retrieval jobs.
 imageRetrievalQueue.process(async (job, done) => {
