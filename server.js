@@ -66,14 +66,14 @@ app.listen(process.env.PORT || 3000, async () => {
 
 	await connectToDb()
 
-	// Empty and clean the queue
-	await Promise.all([
-		scrapingQueue.empty(),
-		scrapingQueue.clean(0, 'completed'),
-		scrapingQueue.clean(0, 'failed'),
-		scrapingQueue.clean(0, 'delayed'),
-		scrapingQueue.clean(0, 'active')
-	])
+	// // Empty and clean the queue
+	// await Promise.all([
+	// 	scrapingQueue.empty(),
+	// 	scrapingQueue.clean(0, 'completed'),
+	// 	scrapingQueue.clean(0, 'failed'),
+	// 	scrapingQueue.clean(0, 'delayed'),
+	// 	scrapingQueue.clean(0, 'active')
+	// ])
 
 	winston.log('info', 'ScrapingQueue has been emptied')
 
