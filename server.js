@@ -4,9 +4,8 @@ require('dotenv').config()
 const { connectToDb } = require('./database/database')
 // const scrapingQueue = require('./Queue/ScrapingQueue')
 // const serverAdapter = require('./router/bull.router')
-const winston = require('./winston')
+// const winston = require('./winston')
 const Keyword = require('./class/Keyword')
-require('./class/TelegramBot')
 const KeywordModel = require('./model/KeywordModel')
 const cron = require('node-cron')
 const mainScrapingFunc = require('./mainScrapingFunc') // Adjust the path accordingly
@@ -74,8 +73,6 @@ app.listen(process.env.PORT || 3000, async () => {
 	// 	scrapingQueue.clean(0, 'delayed'),
 	// 	scrapingQueue.clean(0, 'active')
 	// ])
-
-	winston.log('info', 'ScrapingQueue has been emptied')
 
 	// Delete all existing keywords and add a new one with the specified link and keyword
 	await KeywordModel.deleteMany({})
