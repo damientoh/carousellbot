@@ -2,7 +2,8 @@ const axios = require('axios')
 const cheerio = require('cheerio')
 const Keyword = require('../class/Keyword')
 const winston = require('../winston')
-
+const fs = require('fs')
+const path = require('path')
 /**
  * Represents a web scraper that extracts information based on a provided link and keyword.
  */
@@ -60,29 +61,41 @@ class Scraper {
 	 * @throws {Error} If there is an error during the extraction process.
 	 */
 	static _getFirstPageDataFromHtml(firstPageHtml) {
+		console.log('Starting _getFirstPageDataFromHtml...')
+
 		const $ = cheerio.load(firstPageHtml)
+		console.log('Loaded HTML into Cheerio.')
 
 		const result = []
+		console.log('Initialized result array.')
 
 		// Loop through each listing card element
 		$("[data-testid^='listing-card']").each(function () {
+			console.log('Processing a listing card element...')
+
 			let carousellId = $(this)
 				.attr('data-testid')
 				.replace('listing-card-', '')
-			carousellId = parseInt(carousellId)
+			console.log('Extracted carousellId:', carousellId)
 
+			carousellId = parseInt(carousellId)
 			if (!carousellId) {
+				console.log('Invalid carousellId, skipping this listing.')
 				return
 			}
+			console.log('Parsed carousellId:', carousellId)
 
 			const carousellBaseUrl = 'https://carousell.sg'
+			console.log('Set base URL:', carousellBaseUrl)
 
 			const content = $(this).children().first()
 			const header = $(content).children('a').first()
+			console.log('Extracted content and header.')
 
 			// Extract owner profile URL
 			const ownerProfileUrl =
 				carousellBaseUrl + $(header).attr('href').split('?')[0]
+			console.log('Extracted ownerProfileUrl:', ownerProfileUrl)
 
 			// Extract posted date and boosted status
 			const postedDate = $(header)
@@ -91,32 +104,42 @@ class Scraper {
 				.children()
 				.eq(1)
 				.text()
+			console.log('Extracted postedDate:', postedDate)
+
 			const isBoosted =
 				$(header).children().eq(1).children().eq(1).children().length >
 				1
+			console.log('Determined isBoosted:', isBoosted)
 
 			// Extract listing URL, title, condition, and price
 			const listingUrl =
 				carousellBaseUrl +
 				$(content).children('a').eq(1).attr('href').split('?')[0]
+			console.log('Extracted listingUrl:', listingUrl)
+
 			const title = $(content)
 				.children('a')
 				.eq(1)
 				.children('p')
 				.eq(0)
 				.text()
+			console.log('Extracted title:', title)
+
 			const condition = $(content)
 				.children('a')
 				.eq(1)
 				.children('p')
 				.eq(1)
 				.text()
+			console.log('Extracted condition:', condition)
+
 			const price = $(content)
 				.children('a')
 				.eq(1)
 				.children('div')
 				.eq(1)
 				.text()
+			console.log('Extracted price:', price)
 
 			// Check if the listing is valid (not boosted and has a valid posted date)
 			const validListing =
@@ -126,9 +149,14 @@ class Scraper {
 				postedDate.indexOf('month') === -1 &&
 				postedDate.indexOf('year') === -1 &&
 				postedDate.indexOf('years') === -1
+			console.log('Valid listing:', validListing)
+
+			const imageUrl = $(content).find('img').attr('src')
+			console.log('Extracted imageUrl:', imageUrl)
 
 			// Add the listing to the result if it is valid
 			if (validListing) {
+				console.log('Adding valid listing to results.')
 				result.push({
 					postedDate,
 					carousellId,
@@ -136,13 +164,19 @@ class Scraper {
 					price,
 					condition,
 					ownerProfileUrl,
-					listingUrl
+					listingUrl,
+					imageUrl
 				})
+			} else {
+				console.log('Listing is not valid, skipping.')
 			}
 		})
 
+		console.log('Finished processing all listing cards.')
 		result.reverse()
+		console.log('Reversed result array.')
 
+		console.log('Returning result:', result)
 		return result
 	}
 
@@ -153,11 +187,7 @@ class Scraper {
 	 * @returns {string} The generated URL.
 	 */
 	makeUrl() {
-		if (this.keyword === '*') {
-			return `${this.link}?sort_by=3`
-		} else {
-			return `${this.link}?search=${this.keyword}&sort_by=3`
-		}
+		return this.link
 	}
 
 	/**
@@ -167,23 +197,53 @@ class Scraper {
 	 */
 	async scrape() {
 		try {
-			// Retrieve the first page HTML
-			const firstPage = await axios.get(this.makeUrl(), {
-				timeout: 10000 // Wait for 10 seconds
+			// Prepare the data for the API request
+			const data = JSON.stringify({
+				cmd: 'request.get',
+				url: this.makeUrl()
 			})
 
-			// Extract listings from the first page
+			console.log('Prepared data for Scrappey API:', data)
+
+			// Make the POST request to the Scrappey API via RapidAPI
+			const response = await axios.post(
+				'https://scrappey-com.p.rapidapi.com/api/v1',
+				data,
+				{
+					headers: {
+						'x-rapidapi-key':
+							'938b25843dmsh5215bd0c4e2aa53p1b24cbjsn929b1e1ba3ed', // Your RapidAPI key
+						'x-rapidapi-host': 'scrappey-com.p.rapidapi.com',
+						'Content-Type': 'application/json'
+					},
+					timeout: 3 * 30 * 1000 // Wait for 30 seconds
+				}
+			)
+
+			console.log(
+				'Received response from Scrappey API:',
+				response.data.solution.response
+			)
+
+			// Write the response to a file
+			const filePath = path.join(__dirname, 'scrappey_response.txt')
+			fs.writeFileSync(filePath, response.data.solution.response, 'utf8')
+			console.log('Response written to file:', filePath)
+
+			// Extract listings from the API response
 			// Update the listings
-			this.listings = Scraper._getFirstPageDataFromHtml(firstPage.data)
+			this.listings = Scraper._getFirstPageDataFromHtml(
+				response.data.solution.response
+			)
+			console.log('Listings extracted and updated:', this.listings)
 		} catch (error) {
-			winston.log('error', 'failed to scrape', {
-				url,
-				listingUrl: this.makeUrl()
-			})
+			console.error(
+				'Error occurred during scraping via Scrappey API:',
+				error
+			)
 			throw error
 		}
 	}
-
 	/**
 	 * Processes listings: filters seen listings, updates previous fetched IDs, and clears listings if it's the
 	 * first scrape.

@@ -16,7 +16,7 @@ const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
 // New command: respond to "ping" with "pong"
 bot.onText(/ping/, (msg) => {
     console.log('Received a message that matches "ping" pattern:')
-    console.log('Message Object:', msg)
+    console.log('Message Object:', JSON.stringify(msg, null, 2)) // Added detailed message logging
 
     const chatId = msg.chat.id
     console.log('Extracted chat ID:', chatId)
@@ -38,6 +38,7 @@ bot.onText(/ping/, (msg) => {
         console.log('Message text is not exactly "ping". No response will be sent.')
     }
 })
+
 bot.on('polling_error', msg => console.log(msg))
 
 module.exports = bot

@@ -20,15 +20,15 @@ scrapingQueue.process(async (job, done) => {
 			job.data.keywordId
 		)
 
-		const telegramChats = await Keyword.getAllTelegramChats(
-			job.data.keywordId
-		)
-		const chatIds = telegramChats.map(telegramChat => telegramChat.chatId)
-
-		if (chatIds.length === 0) {
-			done()
-			return
-		}
+		// const telegramChats = await Keyword.getAllTelegramChats(
+		// 	job.data.keywordId
+		// )
+		// const chatIds = telegramChats.map(telegramChat => telegramChat.chatId)
+		//
+		// if (chatIds.length === 0) {
+		// 	done()
+		// 	return
+		// }
 
 		await scraper.scrape()
 
@@ -60,7 +60,7 @@ scrapingQueue.process(async (job, done) => {
 		}
 
 		// Delay before finishing this job and moving on to the next
-		await new Promise(resolve => setTimeout(resolve, 10 * 1000))
+		await new Promise(resolve => setTimeout(resolve, 60 * 1000))
 		done()
 	} catch (err) {
 		done(err)

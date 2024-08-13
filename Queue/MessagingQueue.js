@@ -15,7 +15,7 @@ messagingQueue.process(async (job, done) => {
 		})
 
 		// Define the specific chat ID you want to send the message to
-		const specificChatId = '-1002237927569'
+			const specificChatId = '-1002237927569'
 		console.log('Specific chat ID defined:', specificChatId)
 
 		// Check if the specific chat ID has already seen the listing
