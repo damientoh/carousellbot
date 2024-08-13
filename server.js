@@ -10,7 +10,7 @@ require('./class/TelegramBot')
 const KeywordModel = require('./model/KeywordModel')
 const cron = require('node-cron')
 const mainScrapingFunc = require('./mainScrapingFunc') // Adjust the path accordingly
-const bot = require('./class/TelegramBot')
+// const bot = require('./class/TelegramBot')
 // Initiate app
 const app = express()
 
@@ -48,11 +48,11 @@ cron.schedule(
 				error
 			})
 
-			// Send the error message to Telegram
-			await bot.sendMessage(
-				'-1002237927569', // Replace with your actual channel username or ID
-				errorMessage
-			)
+			// // Send the error message to Telegram
+			// await bot.sendMessage(
+			// 	'-1002237927569', // Replace with your actual channel username or ID
+			// 	errorMessage
+			// )
 		}
 	},
 	{

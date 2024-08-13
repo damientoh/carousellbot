@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
+const axios = require('axios')
 const Scraper = require('./class/Scraper')
 const KeywordModel = require('./model/KeywordModel')
 const { connectToDb } = require('./database/database') // Adjust the path based on your project structure
 require('dotenv').config()
-const bot = require('./class/TelegramBot')
 
 /**
  * Main function to scrape all keywords and log the listings.
@@ -54,13 +54,14 @@ async function mainScrapingFunc() {
 					const message = `<b>${listing.title}</b>\n${listing.price}\n${listing.postedDate}`
 
 					// Send the message with the image and a "View Listing" button to the Telegram channel
-					await bot.sendPhoto(
-						'-1002237927569', // Replace with your actual channel username or ID
-						listing.imageUrl,
+					await axios.post(
+						`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendPhoto`,
 						{
+							chat_id: '-1002237927569', // Replace with your actual channel username or ID
+							photo: listing.imageUrl,
 							caption: message,
 							parse_mode: 'HTML',
-							reply_markup: {
+							reply_markup: JSON.stringify({
 								inline_keyboard: [
 									[
 										{
@@ -69,7 +70,7 @@ async function mainScrapingFunc() {
 										}
 									]
 								]
-							}
+							})
 						}
 					)
 
@@ -92,9 +93,12 @@ async function mainScrapingFunc() {
 		console.error('Error in mainScrapingFunc:', error)
 
 		// Send error message to Telegram
-		await bot.sendMessage(
-			'-1002237927569', // Replace with your actual channel username or ID
-			`ERROR: ${error.message}`
+		await axios.post(
+			`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`,
+			{
+				chat_id: '-1002237927569', // Replace with your actual channel username or ID
+				text: `ERROR: ${error.message}`
+			}
 		)
 	}
 }
