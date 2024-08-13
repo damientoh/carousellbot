@@ -2,8 +2,8 @@
 const express = require('express')
 require('dotenv').config()
 const { connectToDb } = require('./database/database')
-const scrapingQueue = require('./Queue/ScrapingQueue')
-const serverAdapter = require('./router/bull.router')
+// const scrapingQueue = require('./Queue/ScrapingQueue')
+// const serverAdapter = require('./router/bull.router')
 const winston = require('./winston')
 const Keyword = require('./class/Keyword')
 require('./class/TelegramBot')
@@ -21,7 +21,7 @@ app.use(express.json())
 app.use(express.static('public'))
 
 // Use the bull board router
-app.use('/q', serverAdapter.getRouter())
+// app.use('/q', serverAdapter.getRouter())
 
 // Register the main router
 app.use('/', require('./router/main.router'))
