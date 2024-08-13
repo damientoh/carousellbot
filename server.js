@@ -28,37 +28,37 @@ app.use('/', require('./router/main.router'))
 
 // Schedule the cron job
 // Schedule the cron job
-cron.schedule(
-	'*/3 6-23 * * *',
-	async () => {
-		console.log(
-			'Running mainScrapingFunc at:',
-			new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
-		)
-		try {
-			await mainScrapingFunc()
-		} catch (error) {
-			const errorMessage = `ERROR: ${error.message}`
-
-			// Log the error to the console
-			console.error(errorMessage)
-
-			// Log the error using Winston
-			winston.log('error', 'Error in scheduled mainScrapingFunc:', {
-				error
-			})
-
-			// // Send the error message to Telegram
-			// await bot.sendMessage(
-			// 	'-1002237927569', // Replace with your actual channel username or ID
-			// 	errorMessage
-			// )
-		}
-	},
-	{
-		timezone: 'Asia/Singapore'
-	}
-)
+// cron.schedule(
+// 	'*/3 6-23 * * *',
+// 	async () => {
+// 		console.log(
+// 			'Running mainScrapingFunc at:',
+// 			new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
+// 		)
+// 		try {
+// 			await mainScrapingFunc()
+// 		} catch (error) {
+// 			const errorMessage = `ERROR: ${error.message}`
+//
+// 			// Log the error to the console
+// 			console.error(errorMessage)
+//
+// 			// Log the error using Winston
+// 			winston.log('error', 'Error in scheduled mainScrapingFunc:', {
+// 				error
+// 			})
+//
+// 			// // Send the error message to Telegram
+// 			// await bot.sendMessage(
+// 			// 	'-1002237927569', // Replace with your actual channel username or ID
+// 			// 	errorMessage
+// 			// )
+// 		}
+// 	},
+// 	{
+// 		timezone: 'Asia/Singapore'
+// 	}
+// )
 
 // App listen
 app.listen(process.env.PORT || 3000, async () => {
