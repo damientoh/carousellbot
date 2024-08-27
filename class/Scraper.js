@@ -151,7 +151,7 @@ class Scraper {
 				postedDate.indexOf('years') === -1
 			console.log('Valid listing:', validListing)
 
-			const imageUrl = $(content).find('img').attr('src')
+			const imageUrl = $(content).find('a:eq(1) img').first().attr('src')
 			console.log('Extracted imageUrl:', imageUrl)
 
 			// Add the listing to the result if it is valid
@@ -226,9 +226,6 @@ class Scraper {
 			)
 
 			// Write the response to a file
-			const filePath = path.join(__dirname, 'scrappey_response.txt')
-			fs.writeFileSync(filePath, response.data.solution.response, 'utf8')
-			console.log('Response written to file:', filePath)
 
 			// Extract listings from the API response
 			// Update the listings

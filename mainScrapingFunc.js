@@ -102,5 +102,5 @@ async function mainScrapingFunc() {
 		)
 	}
 }
-
+// mainScrapingFunc()
 module.exports = mainScrapingFunc
